@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "charloratools"
-version = "0.2.3"
+version = "0.2.4"
 description = "Python package including tools that facilitate training images scraping, management, and filtering for stable diffusion character LoRa training."
 requires-python = ">=3.10.6"
 #Installed dynamically in setup: -torch,torchvision,torchaudio,xformers,facenet_pytorch
@@ -38,7 +38,8 @@ readme="README.md"
 [project.optional-dependencies]
 dev = ["coverage>=7.0.0,<8.0.0",
 "codecov>=2.0.0,<3.0.0",
-"jupyter>=1.0.0"
+"jupyter>=1.0.0",
+"pytest",
 ]
 
 [project.urls]

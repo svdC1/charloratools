@@ -39,9 +39,14 @@ class ImgManager:
   OPERATION_ON_DELETED="Trying to perform operation on deleted image"
   logger=logging.getLogger(__name__)
 
-  def __init__(self,path:str,hashtype:str='sha256'):
-    path=Path(path).resolve()
+  def __init__(self,path:str|Path,hashtype:str='sha256'):
+    if isinstance(path,str):
+      path=Path(path).resolve()
+    elif isinstance(path,Path):
+      path=path
     # Checking if image path is valid
+    if not path.exists():
+      raise errors.InvalidPathError("Path doesn't exist")
     if not path.is_file():
       raise errors.InvalidInputError("Image path does not exist or is not a file!")
     #Cheking if image extension is supported
@@ -123,7 +128,7 @@ class ImgManager:
       raise errors.InvalidInputError("other must be numpy array")
     return np.array_equal(self.array,other)
 
-  def copy_to(self,path,name:str|None=None,copy_delete:bool=False):
+  def copy_to(self,path:str|Path,name:str|None=None,copy_delete:bool=False):
     """
     Copies image to a new directory,appends a datetime.now unique suffix
     if a file of the same name already exists.
@@ -134,17 +139,27 @@ class ImgManager:
     if isinstance(path,str):
       path=Path(path).resolve()
     elif isinstance(path,Path):
-      path=path
+      path=path.resolve()
     else:
       raise errors.InvalidInputError("path must be string or Path object")
     if not path.is_dir():
       raise errors.InvalidInputError("Path must be a directory")
+    if not path.exists():
+      raise errors.InvalidPathError("Path Doesn't exist")
 
     if name:
+      if not isinstance(name,str):
+        raise errors.InvalidInputError("Name must be str")
+      
       if copy_delete:
-        (path/name).unlink()
+        try:
+          (path/name).unlink()
+        except Exception as e:
+          raise errors.ImgOperationError(f"Couldn't delete original image {path/name}, error : ({str(e)})")
         self.logger.debug(f"Deleted Image {path/name}")
+        
         copy_path=path/name
+        
       else:
         copy_path = path/name
 
@@ -152,6 +167,8 @@ class ImgManager:
       copy_path = path/f"{self.fname}_{utils.GetUniqueDtStr()}.{self.ext}"
     else:
       copy_path = path/self.basename
+    if copy_path.exists():
+      self.logger.warning("Image will be overwritten")
     try:
       shutil.copyfile(self.path,copy_path)
       self.logger.debug(f"Copied Image {self.path} to {copy_path}")
@@ -209,6 +226,10 @@ class ImgManager:
       with Image.open(self.path) as img:
         hash=imagehash.dhash(img)
     return hash
+  
+  def __hash__(self):
+    return str(self.hash)
+  
 
 def refresh_decorator(func):
   def wrapper(*args,**kwargs):
@@ -237,7 +258,7 @@ class GalleryManager:
     hashtype: Type of hash to use for comparing images,defaults to sha256
   """
   logger=logging.getLogger(__name__)
-  def __init__(self,path:str,hashtype:str='sha256',show_tqdm:bool=False):
+  def __init__(self,path:str|Path,hashtype:str='sha256',show_tqdm:bool=False):
     if isinstance(path,str):
       self.path=Path(path).resolve()
     elif isinstance(path,Path):
@@ -268,18 +289,53 @@ class GalleryManager:
   @refresh_decorator
   def __getitem__(self,key):
     if isinstance(key,str):
-      return self.images[self.path/key]
+      imgmanager=ImgManager(path=Path(key).resolve(),hashtype=self.hashtype)
+      if imgmanager in self:
+        index=self.get_img_manager_index(imgmanager)
+        
+        return self.img_managers[index]
+      else:
+        raise KeyError("Path isn't valid or Image doesn't match any image in gallery")
+    elif isinstance(key,Path):
+      imgmanager=ImgManager(path=key,hashtype=self.hashtype)
+      if imgmanager in self:
+        index=self.get_img_manager_index(imgmanager)
+        return self.img_managers[index]
+      else:
+        raise KeyError("Path isn't valid or Image doesn't match any image in gallery")
+  
+    elif isinstance(key,ImgManager):
+      if key in self:
+        index=self.get_img_manager_index(key)
+        return self.img_managers[index]
+      else:
+        raise KeyError("Image doesn't match any image present in gallery")
+      
+    elif isinstance(key,int):
+      return self.img_managers[key]
     else:
-      raise errors.InvalidInputError("key must be str")
+      raise KeyError(f"Key must be a string with the image file name,path-like object of image path,or ImgManager object, got {type(key)}")
+    
   @refresh_decorator
-  def __setitem__(self, key, value):
+  def __setitem__(self, key, value):    
     if isinstance(value,str):
       oldimgmanager=self[key]
-      nimg=ImgManager(value,hashtype=self.hashtype)
+      nimg=ImgManager(Path(value).resolve(),hashtype=self.hashtype)
       nimg.copy_to(self.path,name=oldimgmanager.basename,copy_delete=True)
+      
+    elif isinstance(value,ImgManager):
+      value.copy_to(self.path)
+    
+    elif isinstance(value,Path):
+      nimg=ImgManager(path=value.resolve(),hashtype=self.hashtype)
+      nimg.copy_to(self.path)
+    else:
+      raise errors.OperationNotSupportedError("Operation not supported")
+      
+      
   @refresh_decorator
   def __iter__(self):
-    return iter(self.img_managers)
+    return iter(tuple(self.img_managers))
   @refresh_decorator
   def __contains__(self,item):
     if isinstance(item,self.__class__):
@@ -296,7 +352,15 @@ class GalleryManager:
         return np.all(isin_bools)
 
     elif isinstance(item,list):
-      ohashes=[ImgManager(i,hashtype=self.hashtype).hash for i in item]
+      ohashes=[]
+      for i in item:
+        if isinstance(i,ImgManager):
+          if i.hashtype!=self.hashtype:
+            ohashes.append(i.to_hash(self.hashtype))
+          else:
+            ohashes.append(i.hash)
+        elif isinstance(i,str):
+          ohashes.append(ImgManager(path=i,hashtype=self.hashtype).hash)
       shashes=[i.hash for i in self]
       if self.hashtype=='sha256':
         return np.isin(np.array(shashes),np.array(ohashes)).all()
@@ -312,13 +376,13 @@ class GalleryManager:
         if self.hashtype=='sha256':
           return hash in [i.hash for i in self]
         else:
-          shahes=[i.hash for i in self]
+          shashes=[i.hash for i in self]
           return np.any([shash==hash for shash in shashes])
       else:
         if self.hashtype=='sha256':
           return item.hash in [i.hash for i in self]
         else:
-          shahes=[i.hash for i in self]
+          shashes=[i.hash for i in self]
           return np.any([shash==item.hash for shash in shashes])
 
     elif isinstance(item,str):
@@ -326,7 +390,7 @@ class GalleryManager:
       if self.hashtype=='sha256':
         return nhash in [i.hash for i in self]
       else:
-        shahes=[i.hash for i in self]
+        shashes=[i.hash for i in self]
         return np.any([shash==nhash for shash in shashes])
     else:
       raise errors.OperatorNotSupportedError(f'Operation not supported for type {type(item)}')
@@ -366,7 +430,7 @@ class GalleryManager:
       if other.hashtype!=self.hashtype:
         other.change_hashtype(self.hashtype)
       new_dir_name=Path(f"{self.ext_dir}")/Path(f"{self.basename}_add_{other.basename}")
-      utils.dirisvalid(new_dir_name, create_if_not_found=True,show_tqdm=self.show_tqdm)
+      new_dir_name=utils.dirisvalid(new_dir_name, create_if_not_found=True,show_tqdm=self.show_tqdm)
       for imgmanager in tqdm(self,desc='Copying 1st instance images'):
         imgmanager.copy_to(new_dir_name.resolve())
       for oimgmanager in tqdm(other,desc='Copying 2nd instance images'):
@@ -376,12 +440,24 @@ class GalleryManager:
     #Subtracting instance from str
     elif isinstance(other,str):
       nimgmanager=ImgManager(other,hashtype=self.hashtype)
-      new_dir_name=Path(f"{self.ext_dir}")/Path(f"{self.basename}_add_{other.basename}")
-      utils.dirisvalid(new_dir_name, create_if_not_found=True,show_tqdm=self.show_tqdm)
+      new_dir_name=Path(f"{self.ext_dir}")/Path(f"{self.basename}_add_{nimgmanager.basename}")
+      new_dir_name=utils.dirisvalid(new_dir_name, create_if_not_found=True,show_tqdm=self.show_tqdm)
       for imgmanager in self:
         imgmanager.copy_to(new_dir_name.resolve())
       nimgmanager.copy_to(new_dir_name.resolve())
       return GalleryManager(new_dir_name.resolve(),hashtype=self.hashtype)
+    elif isinstance(other,ImgManager):
+      if other.hashtype!=self.hashtype:
+        other=ImgManager(other.path)
+      new_dir_name=Path(f"{self.ext_dir}")/Path(f"{self.basename}_add_{other.basename}")
+      new_dir_name=utils.dirisvalid(new_dir_name, create_if_not_found=True,show_tqdm=self.show_tqdm)
+      for imgmanager in self:
+        imgmanager.copy_to(new_dir_name.resolve())
+      other.copy_to(new_dir_name.resolve())
+      return GalleryManager(new_dir_name.resolve(),hashtype=self.hashtype)
+    else:
+      raise errors.OperationNotSupportedError("Operation not supported")
+      
   @refresh_decorator
   def __sub__(self,other):
     #Subtracting two instances
@@ -400,7 +476,7 @@ class GalleryManager:
       if len(imgs_to_add)==0:
         raise errors.OperationResultsInEmptyDirectoryError("Operation would result in empty directory")
       new_dir_name=Path(f"{self.ext_dir}")/Path(f"{self.basename}_sub_{other.basename}")
-      utils.dirisvalid(new_dir_name, create_if_not_found=True,show_tqdm=self.show_tqdm)
+      new_dir_name=utils.dirisvalid(new_dir_name, create_if_not_found=True,show_tqdm=self.show_tqdm)
       for imgmanager in tqdm(imgs_to_add,desc='Copying images'):
         imgmanager.copy_to(new_dir_name.resolve())
       return GalleryManager(new_dir_name.resolve(),hashtype=self.hashtype)
@@ -410,10 +486,20 @@ class GalleryManager:
       img_to_add = [i for i in self if i != nimgmanager]
       if len(img_to_add)==0:
         raise errors.OperationResultsInEmptyDirectoryError("Operation would result in empty directory")
-      new_dir_name = Path(f"{self.ext_dir}")/Path(f"{self.basename}_sub_{other.basename}")
-      utils.dirisvalid(new_dir_name, create_if_not_found=True,show_tqdm=self.show_tqdm)
+      new_dir_name = Path(f"{self.ext_dir}")/Path(f"{self.basename}_sub_{nimgmanager.basename}")
+      new_dir_name=utils.dirisvalid(new_dir_name, create_if_not_found=True,show_tqdm=self.show_tqdm)
       for imgmanager in img_to_add:
         imgmanager.copy_to(new_dir_name.resolve())
+    elif isinstance(other,ImgManager):
+      img_to_add=[i for i in self if i!=other]
+      if len(img_to_add)==0:
+        raise errors.OperationResultsInEmptyDirectoryError("Operation would result in empty directory")
+      new_dir_name = Path(f"{self.ext_dir}")/Path(f"{self.basename}_sub_{other.basename}")
+      new_dir_name=utils.dirisvalid(new_dir_name, create_if_not_found=True,show_tqdm=self.show_tqdm)
+      for imgmanager in img_to_add:
+        imgmanager.copy_to(new_dir_name.resolve())
+    else:
+      raise errors.OperationNotSupportedError("Operation not supported")
 
   @refresh_decorator
   def __iadd__(self, other):
@@ -427,6 +513,10 @@ class GalleryManager:
       nimgmanager=ImgManager(other,hashtype=self.hashtype)
       nimgmanager.copy_to(self.path)
       return self
+    elif isinstance(other,ImgManager):
+      other.copy_to(self.path)
+    else:
+      raise errors.OperationNotSupportedError("Operation not supported")
 
   @refresh_decorator
   def __isub__(self, other):
@@ -449,6 +539,12 @@ class GalleryManager:
           imgmanager.delete()
     else:
       raise errors.OperatorNotSupportedError(f'Operation not supported for type {type(other)}')
+  
+  @refresh_decorator
+  def __hash__(self):
+    img_hashes= tuple([hash(manager) for manager in self.img_managers])
+    return hash(img_hashes)
+    
 
   @refresh_decorator
   def to_html_img_gallery(self,output_dir:str,separate_elements:bool=False):
@@ -495,10 +591,11 @@ class GalleryManager:
       self.logger.info("html body formatted sucessfully")
       return head_template,body_template_with_img
     else:
-      with open(output_dir/f'generated_img_gallery_{utils.GetUniqueDtStr()}.html','w') as f:
+      save_path=output_dir/f'generated_img_gallery_{utils.GetUniqueDtStr()}.html'
+      with open(save_path,'w') as f:
         f.write(template_with_img)
       self.logger.info('.html image gallery saved sucessfully')
-      return template_with_img
+      return save_path,template_with_img
 
   @refresh_decorator
   def delete_duplicates(self):
@@ -519,6 +616,17 @@ class GalleryManager:
       i.resize(max_size,keep_aspect_ratio,size,inplace,output_dir)
     if not inplace:
       return GalleryManager(path=output_dir,hashtype=self.hashtype)
+  
+  @refresh_decorator
+  def get_img_manager_index(self,img_manager:ImgManager):
+    if img_manager not in self:
+      raise KeyError("Image isn't in gallery")
+    else:
+      for i,smanager in enumerate(self.img_managers):
+        if img_manager==smanager:
+          return i
+        
+    
 
 
 
@@ -528,8 +636,14 @@ class TmpManager(GalleryManager):
   Handles creation and deletion of temporary directory for image operations
   Extends GalleryManager to use a temporary directory.
   """
-  def __init__(self, hashtype: str, save_content_on_deletion: bool = False, output_dir: str | None = None):
+  def __init__(self, hashtype: str, save_content_on_deletion: bool = False, output_dir: str | Path | None = None):
     #initializing gallery manager attrs
+    if isinstance(output_dir,str):
+      output_dir=Path(output_dir).resolve()
+    elif isinstance(output_dir,Path):
+      output_dir=output_dir
+    else:
+      raise errors.InvalidInputError("output_dir must be str or path-like object")
     self.prev_tmp_dir=None
     self.path=None
     self.basename=None
@@ -557,7 +671,7 @@ class TmpManager(GalleryManager):
    self.tmp_path=Path(self.temp_dir.name).resolve()
    logging.debug(f"Created tmp dir at {self.tmp_path}")
    placeholder=Image.fromarray(np.reshape(np.arange(0, 100, 1, dtype=np.uint8), (10, 10)))
-   placeholder.save(sel.temp_path / 'placeholder.jpg')
+   placeholder.save(self.temp_path / 'placeholder.jpg')
    super().__init__(path=self.tmp_path,hashtype=self.hashtype)
    self.is_open=True
    return self

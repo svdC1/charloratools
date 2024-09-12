@@ -38,12 +38,22 @@ Provides easy image directory management with the *GalleryManager* and *ImgManag
 
 ## Installation
 
-install with pip
+[Install with pip](https://pypi.org/project/charloratools/)
+
 ```bash
 pip install charloratools
 ```
 
-**Important : Install Torch according to your system requirements, for NVIDIA GPUs these are the commands for each CUDA version**
+**Important : Install Torch according to your system requirements, considerations:**
+
+- **When building, pip will try to verify the CUDA version installed in your system, but if that fails or you have an AMD GPU you'll want to install the correct torch distribution.**
+
+- **When pip can't figure out the CUDA version, it will install the CPU only distribution of torch**
+
+- **If pip can't figure out the CUDA version, you'll get a warning during installation that "facenet_pytorch" one of the required libraries wasn't installed that is because facenet_pytorch requires torch to function properly and the CPU-only version is too slow for the models here used. But if you want to use the CPU only version anyway all you have to do is install facenet_pytorch==2.6.0 using pip.**
+
+
+**For NVIDIA GPUs these are the commands for each CUDA version**
 
 - Cuda 11.8
 ```bash

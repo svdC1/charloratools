@@ -97,7 +97,7 @@ class CustomInstallCommand(_install):
 
 setup(
   name="charloratools",
-  version="0.2.3",
+  version="0.2.4",
   description="Python package including tools that facilitate training images scraping, management, and filtering for stable diffusion character LoRa training.",
   author="svdC1",
   author_email="svdc1mail@gmail.com",
@@ -110,7 +110,8 @@ setup(
   extras_require={
     'dev': ["coverage>=7.0.0,<8.0.0",
 		"codecov>=2.0.0,<3.0.0",
-		"jupyter>=1.0.0"
+		"jupyter>=1.0.0",
+    "pytest",
     ]
   },
   cmdclass={

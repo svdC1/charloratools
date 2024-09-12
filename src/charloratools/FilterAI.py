@@ -31,10 +31,10 @@ class FaceRecognizer:
   """
   Class for using facenet_pytorch pre-trained models to detect and recognize faces.
   Args:
-    path:str= Path to a directory containing images
+    path:str|Path= Path to a directory containing images
   """
 
-  def __init__(self,path:str):
+  def __init__(self,path:str|Path):
     """
     :param path str path to directory containing images
     """
@@ -49,7 +49,7 @@ class FaceRecognizer:
       self.logger.warning(f'Torch is using CPU!\nAI Model operations will be significantly slower!')
       self.device = torch.device('cpu')
 
-    self.path=str(Path(path).resolve())
+    self.path=Path(path).resolve()
     self.gallery=SysFileManager.GalleryManager(path)
 
   def __str__(self):
@@ -58,7 +58,7 @@ class FaceRecognizer:
   def __repr__(self):
     return f"FaceRecognizer(path={self.path})"
 
-  def change_directory(self,path:str):
+  def change_directory(self,path:str|Path):
     """
     Method to change instance's default dir for method usage
     :param path str path to directory containing images
@@ -112,7 +112,7 @@ class FaceRecognizer:
     else:
       return SysFileManager.GalleryManager(output_dir)
 
-  def filter_images_without_specific_face(self,ref_img_path:str,output_dir:str,prob_threshold:float|None=None,min_face_size:int=20,
+  def filter_images_without_specific_face(self,ref_img_path:str|Path,output_dir:str,prob_threshold:float|None=None,min_face_size:int=20,
                                           distance_threshold:float=0.6,pretrained_model:str='vggface2',distance_function:str='cosine',
                                           return_info:bool=False):
     """

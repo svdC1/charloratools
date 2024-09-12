@@ -33,7 +33,7 @@ from tqdm import tqdm,trange
 from . import errors
 from . import SysFileManager
 
-def dirisvalid(path:str,check_images:bool=True,return_info:bool=False,hashtype:str|None=None,create_if_not_found:bool=False,show_tqdm:bool=False):
+def dirisvalid(path:str|Path,check_images:bool=True,return_info:bool=False,hashtype:str|None=None,create_if_not_found:bool=False,show_tqdm:bool=False):
   """
     Function to check dir properties or create new directory if it doens't exist
     :param path str path to directory
@@ -50,7 +50,7 @@ def dirisvalid(path:str,check_images:bool=True,return_info:bool=False,hashtype:s
   if isinstance(path,str):
     path = Path(path).resolve()
   elif isinstance(path,Path):
-    path= path
+    path= path.resolve()
   else:
     raise errors.InvalidTypeError("Path must be a string or path-like object")
   #Create Directory and send path if it isn't found and arg is set to true
@@ -65,7 +65,7 @@ def dirisvalid(path:str,check_images:bool=True,return_info:bool=False,hashtype:s
   #If arg is set to true and dir exists return path
   else:
     if create_if_not_found:
-      return path
+      return path.resolve()
   #If not img arg is set to False validate
   if not check_images:
     return True
@@ -111,16 +111,17 @@ def GetUniqueDtStr():
   return datetime.now().strftime("%m%d%y%H%M%S%f")
 
 #---------Face Recognizer Utils------------
-def save_with_detection_box(img_path:str,outdir:str,boxes):
+def save_with_detection_box(img_path:str|Path,outdir:str|Path,boxes):
   outdir=dirisvalid(outdir,create_if_not_found=True)
-  with Image.open(img_path) as img:
+  img_manager=SysFileManager.ImgManager(path=img_path)
+  with Image.open(img_manager.path) as img:
     draw=ImageDraw.Draw(img)
     for box in boxes:
       draw.rectangle(box.tolist(),outline='red',width=5)
-    if img_path.endswith('.jpg'):
-      img.save(outdir/img_path.stem,quality=95)
+    if img_manager.ext==".jpg":
+      img.save(outdir/img_manager.basename,quality=95)
     else:
-      img.save(outdir/img_path.stem)
+      img.save(outdir/img_path.basename)
 
 def distance_function(embedding1, embedding2, method, classify=False, threshold=None):
   """

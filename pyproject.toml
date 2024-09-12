@@ -1,45 +1,50 @@
 [build-system]
-requires = ["setuptools>=42", "wheel",'pip']
+requires = ["setuptools>=72", "wheel",'pip']
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "charloratools"
-version = "0.2.4"
+version = "0.2.5"
 description = "Python package including tools that facilitate training images scraping, management, and filtering for stable diffusion character LoRa training."
-requires-python = ">=3.10.6"
+requires-python = ">=3.11"
 #Installed dynamically in setup: -torch,torchvision,torchaudio,xformers,facenet_pytorch
 dependencies = [
 "numpy>=1.24.0,<2.0.0",
 "requests>=2.0.0,<3.0.0",
 "Pillow>=10.2.0,<10.3.0",
-"opencv-python>=4.9.0",
+"opencv-python>=4.7,<5.0.0",
 "scipy>=1.10.0,<2.0.0",
 "tqdm>=4.0.0,<5.0.0",
 "pandas>=2.0.0,<3.0.0",
 "imagehash>=4.0.0",
-"selenium>=4.0.0",
+"selenium>=4.8.0,<5.0.0",
 "webdriver-manager>=3.0.0",
 "onnx>=1.14.0",
-"matplotlib",
-"scikit-learn>=1.3.0",
-"scikit-image",
+"matplotlib>=3.5.0,<4.0.0",
+"scikit-learn>=1.2.0,<2.0.0",
+"scikit-image>=0.19.0,<1.0.0",
 "easydict",
 "cython>=3.0.2",
-"albumentations",
+"albumentations>=1.2.0,<2.0.0",
 "prettytable",
 "coloredlogs>=15.0",
-"flatbuffers>=23.3.3",
-"gdp"
+"flatbuffers>=23.3.3"
 ]
 authors=[{name="svdC1",email="svdc1mail@gmail.com"}]
 maintainers=[{name="svdC1",email="svdc1mail@gmail.com"}]
-dynamic=['classifiers']
+classifiers=[
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+  ]
 readme="README.md"
 [project.optional-dependencies]
 dev = ["coverage>=7.0.0,<8.0.0",
 "codecov>=2.0.0,<3.0.0",
 "jupyter>=1.0.0",
 "pytest",
+"flake8",
+"black"
 ]
 
 [project.urls]

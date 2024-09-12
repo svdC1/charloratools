@@ -175,11 +175,15 @@ class ImgManager:
     except Exception as e:
       raise errors.ImgOperationError(f"Failed to copy image to {copy_path}: {str(e)}")
 
-  def resize(self,max_size:int,keep_aspect_ratio=True,size:tuple|None=None,inplace:bool=True,output_dir:str|None=None):
+  def resize(self,max_size:int,keep_aspect_ratio=True,size:tuple|None=None,inplace:bool=True,output_dir:str|Path|None=None):
     if not inplace and output_dir is None:
       raise errors.InvalidInputError("output_dir must be provided if inplace=False")
     if not keep_aspect_ratio and size is None:
       raise errors.InvalidInputError("size must be provided if keep_aspect_ratio=False")
+    if isinstance(output_dir,str):
+      output_dir=Path(output_dir).resolve()
+    elif isinstance(output_dir,Path):
+      output_dir=output_dir.resolve()
     try:
       with Image.open(self.path) as img:
         if keep_aspect_ratio:
@@ -201,7 +205,7 @@ class ImgManager:
           self.logger.debug(f"Resized Image {self.basename} to {new_width}x{new_height}")
           self.deleted=False
         else:
-          img_resized.save(f"{output_dir}\\{self.fname}_{new_width}_{new_height}.{self.ext}",quality=95)
+          img_resized.save(output_dir/f"{self.fname}_{new_width}_{new_height}.{self.ext}",quality=95)
     except Exception as e:
       raise errors.ImgOperationError(f"Failed to resize image : {str(e)}")
 
@@ -609,7 +613,7 @@ class GalleryManager:
       i.delete()
 
   @refresh_decorator
-  def resize_all(self,max_size:int,keep_aspect_ratio=True,size:tuple|None=None,inplace:bool=True,output_dir:str|None=None):
+  def resize_all(self,max_size:int,keep_aspect_ratio=True,size:tuple|None=None,inplace:bool=True,output_dir:str|Path|None=None):
     if not inplace:
       output_dir=utils.dirisvalid(output_dir,create_if_not_found=True,show_tqdm=self.show_tqdm)
     for i in self:
@@ -641,7 +645,7 @@ class TmpManager(GalleryManager):
     if isinstance(output_dir,str):
       output_dir=Path(output_dir).resolve()
     elif isinstance(output_dir,Path):
-      output_dir=output_dir
+      output_dir=output_dir.resolve()
     else:
       raise errors.InvalidInputError("output_dir must be str or path-like object")
     self.prev_tmp_dir=None

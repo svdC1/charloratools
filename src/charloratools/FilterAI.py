@@ -65,7 +65,7 @@ class FaceRecognizer:
     """
     self.gallery=SysFileManager.GalleryManager(path)
 
-  def filter_images_without_face(self,output_dir:str,min_face_size:int=20,
+  def filter_images_without_face(self,output_dir:str|Path,min_face_size:int=20,
                                  prob_threshold:float|None=None,return_info=False):
     """
     Method to filter images without face
@@ -83,7 +83,9 @@ class FaceRecognizer:
     imgs_with_face=0
     #Filtering
     with logging_redirect_tqdm():
-      for img in tqdm(self.gallery.image_paths):
+      for img_manager in tqdm(self.gallery):
+        img=img_manager.path
+        img_basename=img_manager.basename
         with Image.open(img) as img_file:
           img_file=img_file.convert('RGB')
           boxes,probs = mtcnn.detect(img_file)
@@ -96,12 +98,12 @@ class FaceRecognizer:
               else:
                 self.logger.debug('Face Detected,copying')
                 imgs_with_face+=1
-                img_file.save(output_dir/img.stem)
+                img_file.save(output_dir/img_basename)
                 info.append({'path': img, 'boxes': boxes, 'probs': probs, 'matched': True})
             else:
               self.logger.debug('Face Detected,copying')
               imgs_with_face+=1
-              img_file.save(output_dir/img.stem)
+              img_file.save(output_dir/img_basename)
               info.append({'path': img, 'boxes': boxes, 'probs': probs, 'matched': True})
           else:
             self.logger.debug('No face detected,skipping')
@@ -112,7 +114,7 @@ class FaceRecognizer:
     else:
       return SysFileManager.GalleryManager(output_dir)
 
-  def filter_images_without_specific_face(self,ref_img_path:str|Path,output_dir:str,prob_threshold:float|None=None,min_face_size:int=20,
+  def filter_images_without_specific_face(self,ref_img_path:str|Path,output_dir:str|Path,prob_threshold:float|None=None,min_face_size:int=20,
                                           distance_threshold:float=0.6,pretrained_model:str='vggface2',distance_function:str='cosine',
                                           return_info:bool=False):
     """
@@ -159,7 +161,9 @@ class FaceRecognizer:
     ref_aligned=mtcnn(ref_img)
     ref_embeddings=resnet(ref_aligned)
     with logging_redirect_tqdm():
-      for img_path in tqdm(self.gallery.image_paths):
+      for img_manager in tqdm(self.gallery):
+        img_path=img_manager.path
+        img_basename=img_manager.basename
         img=cv2.imread(img_path)
         img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
         # Get embeddings for the current image
@@ -191,7 +195,7 @@ class FaceRecognizer:
                 self.logger.debug("Face matches,copying")
                 imgs_with_ref_face += 1
                 rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-                cv2.imwrite(output_dir/img_path.stem, rgb_img)
+                cv2.imwrite(output_dir/img_basename, rgb_img)
 
           else:
             faces=mtcnn.detect(img)
@@ -209,14 +213,14 @@ class FaceRecognizer:
               self.logger.debug("Face matches,copying")
               imgs_with_ref_face+=1
               rgb_img=cv2.cvtColor(img,cv2.COLOR_BGR2RGB)
-              cv2.imwrite(output_dir/img_path.stem,rgb_img)
+              cv2.imwrite(output_dir/img_basename,rgb_img)
 
     if return_info:
       return SysFileManager.GalleryManager(output_dir),{'imgs_with_ref_face':imgs_with_ref_face,'imgs_without_ref_face':imgs_without_ref_face,'info_dict_lst':info}
     else:
       return SysFileManager.GalleryManager(output_dir)
 
-  def filter_images_with_multiple_faces(self,output_dir:str,prob_threshold:float|None,min_face_size:int=20,return_info:bool=False):
+  def filter_images_with_multiple_faces(self,output_dir:str|Path,prob_threshold:float|None=None,min_face_size:int=20,return_info:bool=False):
     """
     Method to filter images where the number of detected faces is greater than one
     :param prob_threshold float|None final probability threshold for face detection,defaults to None
@@ -232,7 +236,9 @@ class FaceRecognizer:
     imgs_with_multiple_faces=0
     imgs_with_one_face=0
     with logging_redirect_tqdm():
-      for img in tqdm(self.gallery.image_paths):
+      for img_manager in tqdm(self.gallery):
+        img=img_manager.path
+        img_basename=img.basename
         with Image.open(img) as img_file:
           img_file=img_file.convert('RGB')
           boxes,probs = mtcnn.detect(img_file)
@@ -250,7 +256,7 @@ class FaceRecognizer:
                 else:
                   self.logger.debug('Face Detected,copying')
                   imgs_with_one_face+=1
-                  img_file.save(output_dir/img.stem)
+                  img_file.save(output_dir/img_basename)
                   info.append({'path': img,'boxes':boxes,'probs': probs,'matched': True})
             else:
               if len(boxes) > 1:
@@ -260,7 +266,7 @@ class FaceRecognizer:
               else:
                 self.logger.debug('Face Detected,copying')
                 imgs_with_one_face += 1
-                img_file.save(output_dir/img.stem)
+                img_file.save(output_dir/img_basename)
                 info.append({'path': img, 'boxes': boxes, 'probs': probs, 'matched': True})
           else:
             self.logger.debug('No face detected,skipping')
@@ -272,7 +278,7 @@ class FaceRecognizer:
       else:
         return SysFileManager.GalleryManager(output_dir)
 
-  def save_images_with_detection_box(self,info_dict_lst:list,output_dir:str,save_only_matched:bool=False):
+  def save_images_with_detection_box(self,info_dict_lst:list,output_dir:str|Path,save_only_matched:bool=False):
     """
     Method to save images with model's detection boxes drawn with red outline to an output directory
     from an 'info' dict list (dict with same format as the one returned by one of the filtering methods)

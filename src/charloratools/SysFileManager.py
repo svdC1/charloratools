@@ -223,6 +223,7 @@ def refresh_decorator(func):
     self.ext_dir=self.path.parent
     self.ext_dir_name=self.path.parent.stem
     self.img_managers = [v for v in self.images.values()]
+    self.image_paths= [k for  k in self.images.keys()]
     self.logger.debug(f"Refreshed images {prev_img_count}->{len(self.images)}")
     return result
   return wrapper

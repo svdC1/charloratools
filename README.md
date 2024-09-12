@@ -1,4 +1,6 @@
-# charloratools
+# charloratools 
+
+![Alt text](https://res.cloudinary.com/ducarqe1h/image/upload/v1726127296/clt_banner_w5hpan.png)
 
 This is a simple python library which intends to **facilitate the process of image gathering,filtering and processing when creating a training dataset to use for training stable diffusion LoRas**. As the name suggests it is specifically useful when organizing a *character lora* image training dataset.
 

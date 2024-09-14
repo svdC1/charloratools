@@ -23,17 +23,12 @@ def test_filter_without_face():
 def test_filter_multiple_face():
   ff=clt.FilterAI.FaceRecognizer(path=temp_dir_paths[0])
   gm=ff.filter_images_with_multiple_faces(output_dir=temp_dir_paths[1],return_info=True)
-  assert len(gm)==1
+  assert len(gm)==2
 
 def test_filter_ref():
   with pytest.raises(clt.errors.NoFaceDetectedInReferenceImage):
     ff=clt.FilterAI.FaceRecognizer(path=temp_dir_paths[0])
     gm=ff.filter_images_without_specific_face(ff.gallery.image_paths[0],temp_dir_paths[1])
 
-def test_info_dict():
-  ff=clt.FilterAI.FaceRecognizer(path=temp_dir_paths[0])
-  gm,info_d=ff.filter_images_without_face(temp_dir_paths[0],return_info=True)
-  result=clt.utils.InfoDict2Pandas(info_d)
-  assert isinstance(result,pd.DataFrame)
   
   

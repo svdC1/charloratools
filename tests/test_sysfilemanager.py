@@ -48,10 +48,16 @@ def test_gm_add():
 
 
 def test_img_copy():
-  create_random_image('random.png',temp_dir_paths[3])
+  create_random_image('random',temp_dir_paths[3])
   imanager=clt.SysFileManager.ImgManager(temp_dir_paths[3]/'random.png','sha256')
   imanager.copy_to(temp_dir_paths[2])
   assert (temp_dir_paths[2]/'random.png').exists()
-  
+
+def test_gm_sub():
+  with pytest.raises(clt.errors.OperationResultsInEmptyDirectoryError):
+    gm1=clt.SysFileManager.GalleryManager(path=temp_dir_paths[0],hashtype='sha256')
+    gm2=clt.SysFileManager.GalleryManager(path=temp_dir_paths[0],hashtype='crop_resistant')
+    gm3=gm1+gm2
+    gm4=gm3-gm1
   
   

@@ -148,7 +148,7 @@ class InstallCommand(install):
 
 setup(
   name="charloratools",
-  version="0.2.5",
+  version="0.2.6",
   description="Python package including tools that facilitate training images scraping, management, and filtering for stable diffusion character LoRa training.",
   packages=find_packages(where="src"),
   package_dir={"": "src"},

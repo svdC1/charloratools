@@ -17,6 +17,6 @@ def test_gallery_manager():
 def test_resize_img():
   gm=clt.SysFileManager.GalleryManager(path=temp_dir_paths[0],hashtype='sha256')
   gm.resize_all(max_size=200,keep_aspect_ratio=False,size=(200,200))
-  with Image.open(gm.img_managers.path) as img:
+  with Image.open(gm.img_managers[0].path) as img:
     assert (img.width==200 and img.height==200)
   

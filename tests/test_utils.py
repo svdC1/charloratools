@@ -5,6 +5,7 @@ import numpy as np
 import charloratools as clt
 from contextlib import nullcontext
 import tempfile
+import torch
 from pathlib import Path
 from conftest import setup_dirs,create_random_image
 
@@ -25,3 +26,8 @@ def test_dirisvalid(opts,expected):
     assert result[0]==expected[0]
   else:
     assert result
+
+def test_dir_to_tensor():
+  t=clt.utils.dir_path_to_img_batch(temp_dir_paths[0])
+  assert (isinstance(t,torch.Tensor) and t.shape[0]==3)
+  

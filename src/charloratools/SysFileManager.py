@@ -675,7 +675,7 @@ class TmpManager(GalleryManager):
    self.tmp_path=Path(self.temp_dir.name).resolve()
    logging.debug(f"Created tmp dir at {self.tmp_path}")
    placeholder=Image.fromarray(np.reshape(np.arange(0, 100, 1, dtype=np.uint8), (10, 10)))
-   placeholder.save(self.temp_path / 'placeholder.jpg')
+   placeholder.save(self.tmp_path / 'placeholder.jpg')
    super().__init__(path=self.tmp_path,hashtype=self.hashtype)
    self.is_open=True
    return self

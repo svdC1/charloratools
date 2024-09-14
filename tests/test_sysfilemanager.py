@@ -19,4 +19,39 @@ def test_resize_img():
   gm.resize_all(max_size=200,keep_aspect_ratio=False,size=(200,200))
   with Image.open(gm.img_managers[0].path) as img:
     assert (img.width==200 and img.height==200)
+
+def test_gm_equals():
+  gm1=clt.SysFileManager.GalleryManager(path=temp_dir_paths[0],hashtype='sha256')
+  gm2=clt.SysFileManager.GalleryManager(path=temp_dir_paths[1],hashtype='phash')
+  assert not gm1==gm2
+
+def test_gm_len():
+  gm1=clt.SysFileManager.GalleryManager(path=temp_dir_paths[0],hashtype='sha256')
+  assert len(gm1)==3
+
+
+def test_img_gallery_html():
+  gm1=clt.SysFileManager.GalleryManager(path=temp_dir_paths[0],hashtype='sha256')
+  savepath=gm1.to_html_img_gallery(temp_dir_paths[2])
+  assert savepath[0].exists()
+
+def test_tmp_manager():
+  with clt.SysFileManager.TmpManager('sha256',output_dir=temp_dir_paths[3]) as gm:
+    create_random_image('random.png',gm.path)
+    assert gm.path.exists()
+
+def test_gm_add():
+  gm1=clt.SysFileManager.GalleryManager(path=temp_dir_paths[0],hashtype='sha256')
+  gm2=clt.SysFileManager.GalleryManager(path=temp_dir_paths[1],hashtype='phash')
+  gm3=gm1+gm2
+  assert (len(gm3)==4 and gm3.path.exists())
+
+
+def test_img_copy():
+  create_random_image('random.png',temp_dir_paths[3])
+  imanager=clt.SysFileManager.ImgManager(temp_dir_paths[3]/'random.png','sha256')
+  imanager.copy_to(temp_dir_paths[2])
+  assert (temp_dir_paths[2]/'random.png').exists()
+  
+  
   

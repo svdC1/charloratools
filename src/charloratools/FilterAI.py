@@ -156,7 +156,7 @@ class FaceRecognizer:
     ref_img=cv2.cvtColor(ref_img,cv2.COLOR_BGR2RGB)
     ref_boxes,probs= mtcnn.detect(ref_img)
     if ref_boxes is None:
-      raise errors.NoFaceDetectedInReferenceImageError("No Face was detected in Reference Image")
+      raise errors.NoFaceDetectedInReferenceImage("No Face was detected in Reference Image")
     # Get embedding for the reference face
     ref_aligned=mtcnn(ref_img)
     ref_embeddings=resnet(ref_aligned)
@@ -238,7 +238,7 @@ class FaceRecognizer:
     with logging_redirect_tqdm():
       for img_manager in tqdm(self.gallery):
         img=img_manager.path
-        img_basename=img.basename
+        img_basename=img_manager.basename
         with Image.open(img) as img_file:
           img_file=img_file.convert('RGB')
           boxes,probs = mtcnn.detect(img_file)

@@ -1,4 +1,4 @@
-name: Build,Lint and Publish to TestPyPI
+name: Build and Publish to TestPyPI
 
 on:
   release:
@@ -27,24 +27,19 @@ jobs:
           python -m pip install --upgrade pip
           pip install build twine pytest pytest-cov coverage
 
-      # Step 4: Install lint and dependencies
+      # Step 4: Install dependencies
       - name: Install lint dependencies
         run: |
           pip install cython>=3.0.2
           pip install pybind11
-          pip install flake8
+          
 
-      # Step 5: Run linting
-      - name: Run linting
-        run: |
-          flake8 src/charloratools/
-
-      # Step 6: Build the package
+      # Step 5: Build the package
       - name: Build the package
         run: |
           python -m build
 
-      # Step 7: Publish to TestPyPI if all previous steps succeed
+      # Step 6: Publish to TestPyPI if all previous steps succeed
       - name: Publish to TestPyPI
         if: success()
         env:

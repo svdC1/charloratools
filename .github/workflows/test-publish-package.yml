@@ -28,7 +28,7 @@ jobs:
           pip install build twine pytest pytest-cov coverage
 
       # Step 4: Install dependencies
-      - name: Install lint dependencies
+      - name: Install dependencies
         run: |
           pip install cython>=3.0.2
           pip install pybind11
@@ -46,4 +46,4 @@ jobs:
           TWINE_USERNAME: '__token__'
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
         run: |
-          python -m twine upload dist/*
+            python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*

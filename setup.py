@@ -104,12 +104,12 @@ class InstallCommand(install):
       if cuda_version:
         logging.info(f"Found CUDA version {cuda_version}, checking support for {os_name}.")
         # Install Torch for CUDA 11.8
-        if cuda_version=="11.8":
+        if cuda_version.startswith("11"):
           logging.info(f"Trying to install Torch distribution for CUDA 11.8 support for {os_name}.")
           self.run_os_command(f"pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cu118")
           
         #Install Torch for CUDA 12.1
-        elif cuda_version=="12.1":
+        elif cuda_version.startswith("12"):
           logging.info(f"Trying to install Torch distribution for CUDA 12.1 support for {os_name}.")
           self.run_os_command(f"pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cu121")
         

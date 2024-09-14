@@ -1,33 +1,22 @@
-from unittest.mock import patch, MagicMock
-from charloratools.SysFileManager import ImgManager
+from conftest import setup_dirs,create_random_image
 import pytest
+import shutil
+from PIL import Image
+import numpy as np
+import charloratools as clt
+from contextlib import nullcontext
+import tempfile
+from pathlib import Path
 
-@patch('charloratools.SysFileManager.Image.open')  # Mock image opening
-def test_img_manager_basic_operations(mock_image_open):
-    # Mock the opened image object with width and height properties
-    mock_image = MagicMock()
-    mock_image.width = 800
-    mock_image.height = 600
-    mock_image_open.return_value = mock_image
-    
-    img_manager = ImgManager("tests/fixtures/sample_image.jpg")
-    assert img_manager.width == 800
-    assert img_manager.height == 600
-    mock_image_open.assert_called_once_with("tests/fixtures/sample_image.jpg")
+temp_dir1,temp_dir2,temp_dir3,temp_dir4,temp_dir_paths,temp_dir1_imgs,temp_dir2_imgs = setup_dirs()
 
-@patch('charloratools.SysFileManager.Image.open')  # Mock image opening
-@patch('charloratools.SysFileManager.Image.save')  # Mock image saving
-def test_img_resize(mock_image_save, mock_image_open):
-    # Mock the opened image object
-    mock_image = MagicMock()
-    mock_image.width = 800
-    mock_image.height = 600
-    mock_image.resize.return_value = MagicMock(width=200, height=200)  # Mock resize output
-    mock_image_open.return_value = mock_image
-    
-    img_manager = ImgManager("tests/fixtures/sample_image.jpg")
-    img_manager.resize(200, inplace=False, output_dir="tests/output")
-    
-    mock_image_open.assert_called_once_with("tests/fixtures/sample_image.jpg")
-    mock_image.resize.assert_called_once_with((200, 200))
-    mock_image_save.assert_called()  # Ensure save was called after resizing
+def test_gallery_manager():
+  gm=clt.SysFileManager.GalleryManager(path=temp_dir_paths[0],hashtype='sha256')
+  assert isinstance(gm,clt.SysFileManager.GalleryManager)
+
+def test_resize_img():
+  gm=clt.SysFileManager.GalleryManager(path=temp_dir_paths[0],hashtype='sha256')
+  gm.resize_all(max_size=200,keep_aspect_ratio=False,size=(200,200))
+  with Image.open(gm.img_managers.path) as img:
+    assert (img.width==200 and img.height==200)
+  

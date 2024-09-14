@@ -1,26 +1,22 @@
-from unittest.mock import patch, MagicMock
-from charloratools.FilterAI import FaceRecognizer
+from conftest import setup_dirs,create_random_image
+import pytest
+import shutil
+from PIL import Image
+import numpy as np
+import charloratools as clt
+from contextlib import nullcontext
+import tempfile
+from pathlib import Path
 
-@patch('charloratools.FilterAI.FaceRecognizer.filter_images_without_face')
-def test_filter_images_without_face(mock_detect_faces):
-    # Mock face detection to return an empty list (no faces detected)
-    mock_detect_faces.return_value = []
-    
-    recognizer = FaceRecognizer("tests/fixtures/valid_images_dir")
-    output_gallery = recognizer.filter_images_without_face("tests/output", min_face_size=20)
-    
-    assert len(output_gallery) == 0  # No images should be returned if no faces are detected
-    mock_detect_faces.assert_called()
+temp_dir1,temp_dir2,temp_dir3,temp_dir4,temp_dir_paths,temp_dir1_imgs,temp_dir2_imgs = setup_dirs()
 
-@patch('charloratools.FilterAI.FaceRecognizer.images_without_face')
-def test_filter_images_with_faces(mock_detect_faces):
-    # Mock face detection to return a face (simulate detecting faces)
-    mock_face = MagicMock()
-    mock_face.rect = (10, 10, 100, 100)  # Simulate bounding box of the face
-    mock_detect_faces.return_value = [mock_face]
-    
-    recognizer = FaceRecognizer("tests/fixtures/valid_images_dir")
-    output_gallery = recognizer.filter_images_without_face("tests/output", min_face_size=20)
-    
-    assert len(output_gallery) > 0  # Ensure images with faces are processed
-    mock_detect_faces.assert_called()
+def test_face_recognizer():
+  ff=clt.FilterAI.FaceRecognizer(path=temp_dir_paths[0])
+  assert isinstance(ff,clt.FilterAI.FaceRecognizer)
+
+def test_filter_without_face():
+  ff=clt.FilterAI.FaceRecognizer(path=temp_dir_paths[0])
+  gm=ff.filter_images_without_face(output_dir=temp_dir_paths[1])
+  assert len(gm)==1
+  
+  

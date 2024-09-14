@@ -37,7 +37,7 @@ jobs:
       # Step 5: Run linting
       - name: Run linting
         run: |
-          flake8 charloratools/
+          flake8 src/charloratools/
 
       # Step 6: Build the package
       - name: Build the package

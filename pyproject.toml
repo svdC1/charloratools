@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=72", "wheel",'pip']
+requires = ["setuptools>=72", "wheel",'pip','cython','pybind11']
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -45,6 +45,13 @@ dev = ["coverage>=7.0.0,<8.0.0",
 "pytest",
 "flake8",
 "black"
+]
+
+full= [
+  'torch==2.2.2',
+  'torchvision==0.17.2',
+  'torchaudio==2.2.2',
+  'facenet_pytorch>=2.6.0'
 ]
 
 [project.urls]

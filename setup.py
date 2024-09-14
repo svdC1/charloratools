@@ -14,8 +14,6 @@ try:
 except ImportError:
   ensurepip.bootstrap()
   
-#Setup logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 class InstallCommand(install):
   """
@@ -23,10 +21,22 @@ class InstallCommand(install):
   """
   
   def run(self):
+    #Setup logging
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
     #Installing torch,torchvision and torchaudio first
-    self.install_pytorch()
+    try:
+      import torch
+      logging.info("Found Torch installation,skipping...")
+    except ImportError:
+      logging.info("Installing Torch...")
+      self.install_pytorch()
     #Installing facenet_pytorch
-    self.install_facenet_pytorch()
+    try:
+      import facenet_pytorch
+      logging.info("Found facenet_pytorch installation,skipping...")
+    except:
+      logging.info("Installing facenet_pytorch...")
+      self.install_facenet_pytorch()
     #Proceed with normal installation
     install.run(self)
   
@@ -149,7 +159,8 @@ setup(
     "pytest",
     "build",
     "twine"
-    ]
+    ],
+    'full':['torch==2.2.2', 'torchvision==0.17.2' ,'torchaudio==2.2.2','facenet_pytorch>=2.6.0']
   },
   cmdclass={
     'install': InstallCommand,

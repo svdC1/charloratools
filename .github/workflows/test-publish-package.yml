@@ -3,6 +3,8 @@ name: Build,Lint and Publish to TestPyPI
 on:
   release:
     types: [published]
+  workflow_dispatch:
+  
 
 jobs:
   build-test-lint-publish:

@@ -202,7 +202,7 @@ class ImgManager:
         if inplace:
           self.delete()
           img_resized.save(self.path,quality=95)
-          self.logger.debug(f"Resized Image {self.basename} to {new_width}x{new_height}")
+          self.logger.debug(f"Resized Image {self.basename} to {img_resized.width}x{img_resized.height}")
           self.deleted=False
         else:
           img_resized.save(output_dir/f"{self.fname}_{new_width}_{new_height}.{self.ext}",quality=95)

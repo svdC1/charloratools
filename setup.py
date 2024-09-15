@@ -2,7 +2,7 @@ from setuptools import setup,find_packages
 
 setup(
   name="charloratools",
-  version="0.3",
+  version="0.3.1",
   description="Python package including tools that facilitate training images scraping, management, and filtering for stable diffusion character LoRa training.",
   packages=find_packages(where="src"),
   package_dir={"": "src"},

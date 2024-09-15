@@ -1,202 +1,239 @@
 import subprocess
-import importlib.util
-import importlib.metadata
 import platform
 import logging
 import re
 import argparse
+import sys
 
+EXECUTABLE=sys.executable
 
-class CustomTorchInstall:
+def run_os_command(command_args:list) -> subprocess.CompletedProcess:
   """
-  Checks the operating system details and installs the correct distributions for torch,torchvision,torchaudio and facenet_pytorch 
+  Helper function to run system commands and manage error handling
   """
+  logging.info(f"Running : {' '.join(command_args)}")
+  try:
+    #stdout:str; stderr:str; returncode:int;  
+    result=subprocess.run(command_args,capture_output=True,text=True,check=True,encoding='utf-8')
+    logging.info(f"Command Return Code : {result.returncode}")
+    return result
   
-  def run_os_command(self,command):
-    """
-    Helper function to run system commands and manage error handling
-    """
-    try:
-      result = subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-      logging.info(result.stdout.decode('utf-8'))
-      return result.stdout.decode('utf-8')
-    
-    except subprocess.CalledProcessError as e:
-      logging.error(f"Command failed: {command}")
-      logging.error(e.stderr.decode('utf-8'))
-      logging.error(f"Command failed: {command}")
-      logging.error(f"stdout: {e.stdout.decode('utf-8')}")
-      logging.error(f"stderr: {e.stderr.decode('utf-8')}")
-      raise RuntimeError(f"Command {command} failed with error: {e.stderr.decode('utf-8')}")
-  
-  def get_cuda_version(self):
-    """
-    Checks if CUDA is available, if it is , return the CUDA version installed
-    """
-    try:
-      # Check if an NVIDIA GPU is present
-      subprocess.run("nvidia-smi", shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-      logging.info("NVIDIA GPU detected.")
-      # Check the installed CUDA version
-      nvcc_output = self.run_os_command("nvcc --version")
-      cuda_version_match = re.search(r"release (\d+\.\d+)", nvcc_output)
-      if cuda_version_match:
-        cuda_version = cuda_version_match.group(1)
+  except subprocess.CalledProcessError:
+    logging.error(f"Command Failed To Run : Out:{result.stdout}; Error:{result.stderr}")
+    return result
+
+def get_cuda_version() -> str|None:
+  """
+   Checks if CUDA is available, if it is , return the CUDA version installed
+  """
+  logging.info("Checking if CUDA is available...")
+  nvidia_smi=run_os_command(['nvidia-smi'])
+  if nvidia_smi.returncode!=0:
+    logging.warning("CUDA is not available.")
+    return None
+  else:
+    logging.info("Found CUDA, checking nvcc for version...")
+    nvcc= run_os_command(['nvcc','--version'])
+    cuda_version_match= re.search(r"release (\d+\.\d+)",nvcc.stdout)
+    if nvcc.returncode!=0:
+      logging.warning("CUDA is not available")
+    else:
+      if not cuda_version_match:
+        logging.warning("Couldn't detect CUDA version from nvcc output")
+        return None
+      else:
+        cuda_version=cuda_version_match.group(1)
         logging.info(f"Detected CUDA version: {cuda_version}")
         return cuda_version
-      else:
-        logging.info("Unable to detect CUDA version from nvcc output.")
-        return None
-      
-    except subprocess.CalledProcessError:
-      logging.info("CUDA is not available.")
-      return None
-  
-  def check_rocm(self):
-    """Check if ROCm (AMD GPU) is available."""
-    try:
-      rocm_output = self.run_os_command("rocminfo")
-      if "AMD" in rocm_output or "Radeon" in rocm_output:
-        logging.info("AMD GPU detected (ROCm).")
-        return True
-      else:
-        logging.info("No ROCm-compatible GPU detected.")
-        return False
-    except subprocess.CalledProcessError:
-      logging.info("ROCm is not available.")
+
+def check_rocm() -> bool|None:
+  """Check if ROCm (AMD GPU) is available."""
+  logging.info("Checking if ROCM is available...")
+  rocm= run_os_command(["rocminfo"])
+  if rocm.returncode!=0:
+    logging.warning("ROCm is not available.")
+    return False
+    
+  else:
+    if "AMD" in rocm or "Radeon" in rocm:
+      logging.info("AMD GPU detected (ROCm).")
+      return True
+    else:
+      logging.info("No ROCm-compatible GPU detected.")
       return False
-  
-  def install_pytorch(self):
-    """Install the appropriate version of Torch based on the platform and CUDA version."""
-    
-    os_name = platform.system()
-    cuda_version = self.get_cuda_version()
-    is_rocm = False
-    #Checking if ROCm is available (Linux only)
-    if os_name == 'Linux':
-      is_rocm = self.check_rocm()
-      if is_rocm:
-        #Installation for Linux with ROCm installed
-        logging.info(f"Found ROCm, installing Torch distribution for ROCm 5.7 support for Linux")
-        print("pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/rocm5.7")
-        self.run_os_command("pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/rocm5.7")
-        
-    
-    #Installation for Windows and Linux
-    if os_name == 'Linux' or os_name == 'Windows':
-      if cuda_version:
-        logging.info(f"Found CUDA version {cuda_version}, checking support for {os_name}.")
-        # Install Torch for CUDA 11.8
-        if cuda_version.startswith("11"):
-          logging.info(f"Trying to install Torch distribution for CUDA 11.8 support for {os_name}.")
-          print("pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cu118")
-          self.run_os_command(f"pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cu118")
-          
-        #Install Torch for CUDA 12.1
-        elif cuda_version.startswith("12"):
-          logging.info(f"Trying to install Torch distribution for CUDA 12.1 support for {os_name}.")
-          print("pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cu121")
-          self.run_os_command(f"pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cu121")
-        
-        #Install Torch for CPU Only
-        else:
-          logging.warning(f"Unsupported CUDA version {cuda_version}.Supported are : 11.8 and 12.1. Falling back to CPU-only Torch.")
-          print("pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cpu")
-          self.run_os_command(f"pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cpu")
-          
-    #Installation on MacOs    
-    elif os_name == 'Darwin':
-      # macOS installation (CPU-only as macOS doesn't support CUDA or ROCm)
-      logging.info("Detected macOs operating system, Trying to install Torch for CPU only")
-      print("pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cpu")
-      self.run_os_command(f"pip install torch==2.2.2 torchvision==0.17.2 torchaudio==2.2.2 --index-url https://download.pytorch.org/whl/cpu")
-        
-    else:
-      logging.error(f"Unsupported platform: {os_name}")
-      print(f"Unsupported platform: {os_name}")
-      raise RuntimeError(f"Unsupported platform: {os_name}")
-  
-  def install_facenet_pytorch(self):
-    """
-    Install the facenet_pytorch library after Torch has been installed.
-    """
-    # Install facenet_pytorch (ensure it works with the installed PyTorch version)
-    logging.info("Installing facenet_pytorch>=2.6.0")
-    print("pip install facenet-pytorch>=2.6.0")
-    self.run_os_command("pip install facenet-pytorch>=2.6.0")
 
-
-def install_torch():
-  #Setup logging
-  logging.basicConfig(level="INFO",style='{', format="{levelname} - {message}")
-  #Checking if torch is installed
-  torch_spec = importlib.util.find_spec("torch")
-  torchvision_spec=importlib.util.find_spec("torchvision")
-  torchaudio_spec=importlib.util.find_spec("torchaudio")
-  facenet_pytorch_spec= importlib.util.find_spec("facenet_pytorch")
-  cti=CustomTorchInstall()
-  if torch_spec is None:
-    print("No torch installation found,installing...")
-    cti.install_pytorch()
-    
+def get_os() -> str|None:
+  if platform.system()=="":
+    return None
   else:
+    logging.info(f"Detected OS {platform.system()}")
+    return platform.system()
+      
+def install_torch_cpu() -> None:
+  """
+  Torch CPU-Only installation
+  """
+  logging.warning("Falling back to CPU-Only Torch install")
+  cpu_args=[EXECUTABLE,"-m","pip","install","torch==2.2.2","torchvision==0.17.2","torchaudio==2.2.2","--index-url","https://download.pytorch.org/whl/cpu"]
+  result=run_os_command(cpu_args)
+  if result.returncode!=0:
+    raise RuntimeError(f"Error while installing Torch CPU-Only: {result.stdout}, Error: {result.stderr}")
+  else:
+    print(result.stdout)
+    
+def install_torch_cuda(cuda_version:str) -> None:
+  """
+  Torch installation with CUDA Support
+  """
+  if cuda_version.startswith("11"):
+    logging.info("Installing Torch for CUDA 11")
+    cu11_args=[EXECUTABLE,"-m","pip","install","torch==2.2.2","torchvision==0.17.2","torchaudio==2.2.2","--index-url","https://download.pytorch.org/whl/cu118"]
+    result=run_os_command(cu11_args)
+    if result.returncode!=0:
+      raise RuntimeError(f"Error while installing Torch with CUDA 11 support: {result.stdout}, Error: {result.stderr}")
+    else:
+      print(result.stdout)
+  
+  elif cuda_version.startswith("12"):
+    logging.info("Installing Torch for CUDA 12")
+    cu12_args=[EXECUTABLE,"-m","pip","install","torch==2.2.2","torchvision==0.17.2","torchaudio==2.2.2","--index-url","https://download.pytorch.org/whl/cu121"]
+    result=run_os_command(cu12_args)
+    if result.returncode!=0:
+      raise RuntimeError(f"Error while installing Torch with CUDA 12 support: {result.stdout}, Error: {result.stderr}")
+    else:
+      print(result.stdout)
+  
+  else:
+    logging.warning(f"Unsupported CUDA version {cuda_version}.Supported are : 11.x and 12.x ;")
+    install_torch_cpu()
+    
+  
+def install_torch_rocm() -> None:
+  """
+  Torch installation with ROCM support - Linux Only
+  """
+  logging.info(f"Found ROCm, installing Torch distribution for ROCm 5.7 support for Linux")
+  rocm_args=[EXECUTABLE,"-m","pip","install","torch==2.2.2","torchvision==0.17.2","torchaudio==2.2.2","--index-url","https://download.pytorch.org/whl/rocm5.7"]
+  result=run_os_command(rocm_args)
+  if result.returncode!=0:
+    raise RuntimeError(f"Error while installing Torch with ROCm Support: {result.stdout}, Error: {result.stderr}")
+  else:
+    print(result.stdout)
+  
+def install_facenet_pytorch() -> None:
+  """
+  Install the facenet_pytorch library after Torch has been installed.
+  """
+  logging.info("Installing facenet-pytorch>=2.6.0")
+
+  facenet_args=[EXECUTABLE,"-m","pip","install","facenet-pytorch>=2.6.0"]
+  result=run_os_command(facenet_args)
+  if result.returncode!=0:
+    raise RuntimeError(f"Error while installing facenet-pytorch: {result.stdout}, Error: {result.stderr}")
+  else:
+    print(result.stdout)
+
+def get_torch_version() -> str|None:
+  try:
     import torch
-    version= torch.__version__
-    if '+' in version:
-      version=version.split("+")[0]
-    print(f"Torch version installed: {version}")
-    if version!="2.2.2":
-      print("Torch version is incompatible, installing 2.2.2 ...")
-      cti.install_pytorch()
-    else:
-      print("Torch version matches,checking torchvision and torchaudio")
-      if not torchvision_spec or not torchaudio_spec:
-        print("No torchvision or torchaudio found,reinstalling torch...")
-        cti.install_pytorch()
-      else:
-        import torchvision
-        import torchaudio
-        
-        vision_version=torchvision.__version__
-        audio_version=torchaudio.__version__
-        if '+' in vision_version:
-          vision_version=vision_version.split("+")[0]
-        if '+' in audio_version:
-          audio_version=audio_version.split("+")[0]
-          
-        if vision_version!="0.17.2":
-          print(f"Incompatible torchvision version {vision_version} found,reinstalling torch...")
-          cti.install_pytorch()
-        
-        elif audio_version!="2.2.2":
-          print(f"Incompatible torchaudio version {audio_version} found,reinstalling torch...")
-          cti.install_pytorch()
-        else:
-          print("torchvision and torchaudio are correctly installed.")
+    t_version=torch.__version__
+    logging.info(f"Found Torch version {t_version}")
+    #Checking for different distributions
+    if "+" in t_version:
+      t_version=t_version.split("+")[0]
+    
+    return t_version
   
-  print("Finished checking torch.")
-  if facenet_pytorch_spec is None:
-    print("No facenet-pytorch installation found,installing...")
-    cti.install_facenet_pytorch()
-  else:
+  except ImportError:
+    logging.warning("No Torch Installation found")
+    return None
+      
+def check_facenet_pytorch() -> bool:
+  try:
     import facenet_pytorch
-    fp_version=importlib.metadata.version('facenet-pytorch')
-    if fp_version!='2.6.0':
-      print(f"Incompatible facenet-pytorch {fp_version},reinstalling...")
-      cti.install_facenet_pytorch()
-    else:
-      print("facenet-pytorch is correctly installed.")
+    logging.info("facenet-pytorch is installed.")
+    return True
+  except ImportError:
+    logging.warning("No facenet-pytorch installation found")
+    return False
   
-  print("torch,torchvision,torchaudio,facenet-pytorch are correctly installed")
+  except RuntimeError:
+    logging.warning("facenet-pytorch installed with incompatible torch version!")
+    return True
+
+
+def run_install_script() -> None:
+  #Checking system details
+  os=get_os()
+  if not os:
+    raise RuntimeError("Couldn't determine OS.")
+  
+  t_version=get_torch_version()
+  fp_installed=check_facenet_pytorch()
+  cuda_version=get_cuda_version()
+  try:
+    rocm_found=check_rocm()
+  except FileNotFoundError:
+    logging.warning("No ROCm found - (Windows File Not Found Error)")
+    rocm_found=False
+  
+  if t_version=="2.2.2":
+    logging.info("Found existing Torch 2.2.2 installation, Exiting")
+    return None
+  
+  else:
+    #CPU-Only Installation for MacOS 
+    if os=="Darwin":
+      install_torch_cpu()
+      if not fp_installed:
+        install_facenet_pytorch()
+        logging.info("Installation Completed")
+      else:
+        logging.info("Installation Completed")
+        
+    #ROCm Linux Installation
+    elif os=="Linux" and rocm_found:
+      install_torch_rocm()
+      if not fp_installed:
+        install_facenet_pytorch()
+        logging.info("Installation Completed")
+      else:
+        logging.info("Installation Completed")
+        
+    #Windows or Linux Installation (Checking for CUDA)
+    elif (os=="Linux" or os=="Windows"):
+      install_torch_cuda(cuda_version)
+      if not fp_installed:
+        install_facenet_pytorch()
+        logging.info("Installation Completed")
+      else:
+        logging.info("Installation Completed")
+        
+    #Windows with ROCm - No Torch support
+    else:
+      install_torch_cpu()
+      if not fp_installed:
+        install_facenet_pytorch()
+        logging.info("Installation Completed")
+      else:
+        logging.info("Installation Completed")
+        
+
+
 
 def main():
-  parser = argparse.ArgumentParser(prog="charloratools")
-  subparsers = parser.add_subparsers(dest="command")
-  # Create install_torch subcommand
-  parser_install = subparsers.add_parser('install_torch', help='Custom Torch and Facenet-Pytorch installation script')
+  #Setup logging
+  logging.basicConfig(level="INFO",style='{', format="{levelname} - {message}")
+  parser = argparse.ArgumentParser(prog="charloratools",description="charloratools CLI")
+  # Create sub-parsers
+  subparsers = parser.add_subparsers(dest='command', help="Available Commands: ")
+  
+  install_torch_parser = subparsers.add_parser('install_torch',help="Check system specs and install correct torch 2.2.2 version.")
+  
   args = parser.parse_args()
+  
   if args.command == "install_torch":
-    install_torch()
+    run_install_script()
     
 if __name__=="__main__":
   main()

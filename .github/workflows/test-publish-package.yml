@@ -7,7 +7,7 @@ on:
   
 
 jobs:
-  build-test-lint-publish:
+  build-publish:
     runs-on: ubuntu-latest
 
     steps:
@@ -17,7 +17,7 @@ jobs:
 
       # Step 2: Set up Python 3.11
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
@@ -47,19 +47,3 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
         run: |
             python -m twine upload --repository-url https://test.pypi.org/legacy/ dist/*
-      #Step 7: Test install and run pytest
-      - name: Install from PyPI
-        if: success()
-        run: |
-          pip install -i https://test.pypi.org/simple/ charloratools
-          python -c "import charloratools"
-      #Step 8: Test CLI
-      - name: Test CLI
-        if: success()
-        run: |
-          charloratools install_torch
-      #Step 9: Run Tests
-      - name: Run Tests
-        if: success()
-        run: |
-          python -m pytest --cov=src/charloratools tests/

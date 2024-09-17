@@ -1,0 +1,4 @@
+[submodule "src/charloratools/facenet_pytorch"]
+	path = src/charloratools/facenet_pytorch
+	url = https://github.com/svdC1/facenet-pytorch/
+	branch = updated_torch_version

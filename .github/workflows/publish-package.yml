@@ -12,6 +12,12 @@ jobs:
       # Step 1: Check out the repository
       - name: Check out the repository
         uses: actions/checkout@v4
+        with:
+          submodules: True
+
+      - name: Initialize and update submodules
+        run: |
+          git submodule update --init --recursive
 
       # Step 2: Set up Python 3.11
       - name: Set up Python

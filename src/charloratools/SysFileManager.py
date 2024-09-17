@@ -12,7 +12,7 @@ import base64
 import PIL
 from PIL import Image,ImageDraw
 import torch
-from facenet_pytorch import MTCNN,InceptionResnetV1
+from .facenet_pytorch import MTCNN,InceptionResnetV1
 import cv2
 from tqdm import tqdm
 from tqdm.contrib.logging import logging_redirect_tqdm
@@ -232,7 +232,10 @@ class ImgManager:
     return hash
   
   def __hash__(self):
-    return str(self.hash)
+    if self.hashtype=="sha256":
+      return int(self.hash,16)
+    else:
+      return hash(self.hash)
   
 
 def refresh_decorator(func):
@@ -642,7 +645,9 @@ class TmpManager(GalleryManager):
   """
   def __init__(self, hashtype: str, save_content_on_deletion: bool = False, output_dir: str | Path | None = None):
     #initializing gallery manager attrs
-    if isinstance(output_dir,str):
+    if output_dir is None:
+      output_dir=None
+    elif isinstance(output_dir,str):
       output_dir=Path(output_dir).resolve()
     elif isinstance(output_dir,Path):
       output_dir=output_dir.resolve()

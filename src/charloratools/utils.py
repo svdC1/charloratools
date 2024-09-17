@@ -14,7 +14,7 @@ import PIL
 from PIL import Image,ImageDraw
 import torch
 from torchvision.transforms import v2
-from facenet_pytorch import MTCNN,InceptionResnetV1
+from .facenet_pytorch import MTCNN,InceptionResnetV1
 import cv2
 from tqdm.contrib.logging import logging_redirect_tqdm
 import numpy as np

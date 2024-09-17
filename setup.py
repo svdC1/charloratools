@@ -2,9 +2,9 @@ from setuptools import setup,find_packages
 
 setup(
   name="charloratools",
-  version="0.3.1",
+  version="0.3.2",
   description="Python package including tools that facilitate training images scraping, management, and filtering for stable diffusion character LoRa training.",
-  packages=find_packages(where="src"),
+  packages=find_packages(where="src",include=['charloratools','charloratools.*','charloratools/facenet_pytorch','charloratools/facenet_pytorch.*']),
   package_dir={"": "src"},
   python_requires=">=3.11",
   extras_require={
@@ -15,6 +15,6 @@ setup(
     "twine",
     "pytest-cov"
     ],
-    'full':['torch==2.2.2', 'torchvision==0.17.2' ,'torchaudio==2.2.2','facenet_pytorch>=2.6.0']
+    'full':['torch', 'torchvision' ,'torchaudio']
   }
 )

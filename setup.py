@@ -5,6 +5,7 @@ setup(
   version="0.3.2",
   description="Python package including tools that facilitate training images scraping, management, and filtering for stable diffusion character LoRa training.",
   packages=find_packages(where="src",include=['charloratools','charloratools.*','charloratools/facenet_pytorch','charloratools/facenet_pytorch.*']),
+  include_package_data=True,
   package_dir={"": "src"},
   python_requires=">=3.11",
   extras_require={

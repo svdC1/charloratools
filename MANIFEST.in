@@ -1,1 +1,1 @@
-include src/charloratools/facenet_pytorch/*
+recursive-include src/charloratools/facenet_pytorch *

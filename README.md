@@ -17,15 +17,17 @@ pip install charloratools[full]
 ```
 ## Installation Steps
 
-### There are 2 dependencies that are not installed during installation through pip due to specific installation requirements for different OSes. Those are **PyTorch** and **facenet-pytorch**. This package won't work unless you **manually install those**.
+### Torch is not installed during installation through pip due to specific installation requirements for different OSes. This package won't work unless you **manually install those**.
+
+### You can also choose to install the OS independent version of torch ( uses only the CPU ) by running the "Torch CPU-Only" pip command listed above.
 
 ## Dependency Install Script
 
-### After installing with pip you can run a **script that automatically detects which distribution of those packages is the correct one for your current machine and installs them**.
+### After installing with pip you can run a **script that automatically detects which distribution of torch is the correct one for your current machine and installs it**.
 
-### The script can also be used to check if you have the correct distribution of those dependencies installed or to fix their installation
+### The script can also be used to check if you have the correct distribution of torch installed or to install the latest correct distribution for your OS.
 
-### The script checks if you already have torch installed, but it will reinstall it if the version is incompatible with the rest of the package's dependencies.
+### The script checks if you already have torch installed and quits without making any changes if you do.
 
 ## Installing and Running The Script
 
@@ -33,17 +35,14 @@ pip install charloratools[full]
 pip install charloratools
 charloratools install_torch
 ```
-## Installing Torch and facenet-pytorch manually
+## Installing Torch Manually
 
-### For Torch, I recommend [following the steps described in their website](https://pytorch.org/get-started/locally/).
+### If you don't want to run the script and prefer installing torch yourself I recommend [following the steps described in their website](https://pytorch.org/get-started/locally/). Once torch is installed the package should work correctly.
 
-### For facenet-pytorch
+## ComfyUI Custom Node
 
-```bash
-pip install facenet-pytorch>=2.6.0
-```
-
+### Some of the functionality of this package is already available as a custom node for ComfyUI [(comfy-ui-lora-dataset-tools)](https://github.com/svdC1/comfy-ui-lora-dataset-tools) , I'll be implementing the rest of the functionalities in new versions of the custom node.
 
 ## Roadmap
 
-### [Make functionality available as ComfyUI Custom Node](https://github.com/svdC1/comfy-ui-lora-dataset-tools)
+ - ### Create better documentation in wiki

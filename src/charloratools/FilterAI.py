@@ -12,7 +12,6 @@ import base64
 #External Libs
 import PIL
 from PIL import Image,ImageDraw
-import torch
 from .facenet_pytorch import MTCNN,InceptionResnetV1
 import cv2
 from tqdm import tqdm
@@ -38,6 +37,10 @@ class FaceRecognizer:
     """
     :param path str path to directory containing images
     """
+    try:
+      import torch
+    except ImportError:
+      raise errors.TorchNotInstalledError("Torch is not installed.")
     #Setting up Logger
     self.logger=logging.getLogger('FaceRecognizer')
 
@@ -133,6 +136,10 @@ class FaceRecognizer:
     :param min_face_size int minimum face size in pixels,defaults to 20
     :param pretrained_model str which pretrained model from facenet_pytorch for Resnet,defaults to vggface2
     """
+    try:
+      import torch
+    except ImportError:
+      raise errors.TorchNotInstalledError("Torch is not installed.")
     #Check pretained_arg
     pretrained_available=['vggface2','casia-webface']
     if pretrained_model not in pretrained_available:
@@ -300,7 +307,10 @@ class FaceRecognizer:
     :param output_dir: str Directory to save images to
     :param save_only_matched:bool Wether to save only matched images ('matched':True),defaults to False
     """
-
+    try:
+      import torch
+    except ImportError:
+      raise errors.TorchNotInstalledError("Torch is not installed.")
     for d in info_dict_lst:
       if 'distance' in d.keys():
         if isinstance(d['distance'],torch.Tensor):

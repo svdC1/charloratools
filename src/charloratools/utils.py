@@ -12,8 +12,6 @@ import base64
 #External Libs
 import PIL
 from PIL import Image,ImageDraw
-import torch
-from torchvision.transforms import v2
 from .facenet_pytorch import MTCNN,InceptionResnetV1
 import cv2
 from tqdm.contrib.logging import logging_redirect_tqdm
@@ -33,6 +31,14 @@ from tqdm import tqdm,trange
 from . import errors
 from . import SysFileManager
 
+def torch_import():
+  try:
+    import torch
+    from torchvision.transforms import v2
+    return torch,v2
+  except ImportError:
+    raise errors.TorchNotInstalledError
+
 def dirisvalid(path:str|Path,check_images:bool=True,return_info:bool=False,hashtype:str|None=None,create_if_not_found:bool=False,show_tqdm:bool=False):
   """
     Function to check dir properties or create new directory if it doens't exist
@@ -43,6 +49,7 @@ def dirisvalid(path:str|Path,check_images:bool=True,return_info:bool=False,hasht
     :param create_if_not_found bool whether to create directory if it does not exist,defaults to False
     :param show_tqdm bool wether or not to show image loading and hashing progress with tqdm,defaults to False
   """
+  torch,v2 = torch_import()
   logger=logging.getLogger(__name__)
   if return_info and hashtype is None:
     raise errors.InvalidInputError("hashtype must be provided if return_info=True")
@@ -112,6 +119,7 @@ def GetUniqueDtStr():
 
 #---------Face Recognizer Utils------------
 def save_with_detection_box(img_path:str|Path,outdir:str|Path,boxes):
+  torch,v2 = torch_import()
   outdir=dirisvalid(outdir,create_if_not_found=True)
   img_manager=SysFileManager.ImgManager(path=img_path)
   with Image.open(img_manager.path) as img:
@@ -135,6 +143,7 @@ def distance_function(embedding1, embedding2, method, classify=False, threshold=
   :param classify: wether to classify embeddings as matching or not based on provided threshold,defaults to False
   :param threshold: threshold for minimum cosine similarity or maximum euclidean distance classsification,defaults to None
   """
+  torch,v2 = torch_import()
   supported_methods = ['euclidean', 'cosine']
   if method not in supported_methods:
     raise errors.InvalidInputError('Method not supported')
@@ -166,6 +175,7 @@ def InfoDict2Pandas(info:dict|list):
   Function to validate and convert info dict returned by FaceRecognizer filtering methods to formatted Pandas DataFrame
   :param info: dict returned by FaceRecognizer filtering methods or list of dicts present in 'info_dict'
    """
+  torch,v2 = torch_import()
   if not isinstance(info, list) and not isinstance(info,dict):
     raise errors.InfoDictFormatError('Must be a dict or list of dicts')
   possible_outer_keys=['imgs_with_face','imgs_without_face','imgs_with_ref_face','imgs_without_ref_face','imgs_with_multiple_faces','imgs_with_one_face']
@@ -355,6 +365,7 @@ def download_from_src(srcs,prefix,save_path,logger):
 
 
 def img_path_to_tensor(img_path,nsize=None):
+  torch,v2 = torch_import()
   if isinstance(img_path,str):
     ipath=Path(img_path).resolve()
   elif isinstance(img_path,Path):
@@ -376,6 +387,7 @@ def img_path_to_tensor(img_path,nsize=None):
 
 
 def dir_path_to_img_batch(path):
+  torch,v2 = torch_import()
   if isinstance(path,str):
     dir_path=Path(path).resolve()
   elif isinstance(path,Path):

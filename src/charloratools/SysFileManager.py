@@ -11,7 +11,6 @@ import base64
 #External Libs
 import PIL
 from PIL import Image,ImageDraw
-import torch
 from .facenet_pytorch import MTCNN,InceptionResnetV1
 import cv2
 from tqdm import tqdm

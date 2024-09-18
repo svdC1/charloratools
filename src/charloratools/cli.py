@@ -19,7 +19,7 @@ def run_os_command(command_args:list) -> subprocess.CompletedProcess:
     return result
   
   except subprocess.CalledProcessError:
-    logging.error(f"Command Failed To Run : Out:{result.stdout}; Error:{result.stderr}")
+    logging.error(f"Command Failed To Run; Error:{result.stderr}")
     return result
 
 def get_cuda_version() -> str|None:
@@ -73,12 +73,12 @@ def install_torch_cpu() -> None:
   """
   Torch CPU-Only installation
   """
-  #pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+  #pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
   logging.warning("Falling back to CPU-Only Torch install")
-  cpu_args=[EXECUTABLE,"-m","pip3","install","torch","torchvision","torchaudio","--index-url","https://download.pytorch.org/whl/cpu"]
+  cpu_args=[EXECUTABLE,"-m","pip","install","torch","torchvision","torchaudio","--index-url","https://download.pytorch.org/whl/cpu"]
   result=run_os_command(cpu_args)
   if result.returncode!=0:
-    raise RuntimeError(f"Error while installing Torch CPU-Only: {result.stdout}, Error: {result.stderr}")
+    raise RuntimeError(f"Error while installing Torch CPU-Only; Error: {result.stderr}")
   else:
     print(result.stdout)
     
@@ -91,22 +91,22 @@ def install_torch_cuda(cuda_version:str|None) -> None:
     install_torch_cpu()
     
   elif cuda_version.startswith("11"):
-    #pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+    #pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
     logging.info("Installing Torch for CUDA 11")
-    cu11_args=[EXECUTABLE,"-m","pip3","install","torch","torchvision","torchaudio","--index-url","https://download.pytorch.org/whl/cu118"]
+    cu11_args=[EXECUTABLE,"-m","pip","install","torch","torchvision","torchaudio","--index-url","https://download.pytorch.org/whl/cu118"]
     result=run_os_command(cu11_args)
     if result.returncode!=0:
-      raise RuntimeError(f"Error while installing Torch with CUDA 11 support: {result.stdout}, Error: {result.stderr}")
+      raise RuntimeError(f"Error while installing Torch with CUDA 11 support; Error: {result.stderr}")
     else:
       print(result.stdout)
   
   elif cuda_version.startswith("12"):
     logging.info("Installing Torch for CUDA 12")
-    #pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-    cu12_args=[EXECUTABLE,"-m","pip3","install","torch","torchvision","torchaudio","--index-url","https://download.pytorch.org/whl/cu121"]
+    #pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+    cu12_args=[EXECUTABLE,"-m","pip","install","torch","torchvision","torchaudio","--index-url","https://download.pytorch.org/whl/cu121"]
     result=run_os_command(cu12_args)
     if result.returncode!=0:
-      raise RuntimeError(f"Error while installing Torch with CUDA 12 support: {result.stdout}, Error: {result.stderr}")
+      raise RuntimeError(f"Error while installing Torch with CUDA 12 support; Error: {result.stderr}")
     else:
       print(result.stdout)
   
@@ -119,12 +119,12 @@ def install_torch_rocm() -> None:
   """
   Torch installation with ROCM support - Linux Only
   """
-  #pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.1
+  #pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm6.1
   logging.info(f"Found ROCm, installing Torch distribution for ROCm 5.7 support for Linux")
   rocm_args=[EXECUTABLE,"-m","pip","install","torch","torchvision","torchaudio","--index-url","https://download.pytorch.org/whl/rocm6.1"]
   result=run_os_command(rocm_args)
   if result.returncode!=0:
-    raise RuntimeError(f"Error while installing Torch with ROCm Support: {result.stdout}, Error: {result.stderr}")
+    raise RuntimeError(f"Error while installing Torch with ROCm Support; Error: {result.stderr}")
   else:
     print(result.stdout)
   

@@ -61,3 +61,6 @@ class OperationNotSupportedError(Exception):
     pass
 class OperationResultsInEmptyDirectoryError(Exception):
     pass
+#-------------Torch Errors-----------------------------
+class TorchNotInstalledError(Exception):
+  pass

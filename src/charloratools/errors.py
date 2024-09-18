@@ -1,66 +1,115 @@
-##-------Image Errors--------
+# -------Image Errors--------
 class ImageIsUnopenableError(Exception):
-  pass
+    pass
+
+
 class ImageTypeNotSupportedError(Exception):
-  pass
+    pass
+
+
 class ImageIsDeletedError(Exception):
-  pass
+    pass
+
+
 class ImgDeleteError(Exception):
-  pass
+    pass
+
+
 class ImgOperationError(Exception):
-  pass
+    pass
+
+
 class ImgHashNotSupportedError(Exception):
-  pass
-##---------------------------
-##------General Errors-------
-#Global Errors
+    pass
+# ---------------------------
+# ------General Errors-------
+# Global Errors
+
 
 class InvalidTypeError(Exception):
     pass
+
+
 class OutOfRangeError(Exception):
     pass
+
+
 class InvalidInputError(Exception):
     pass
+
+
 class InvalidPathError(Exception):
     pass
-##-------------------------------
-##-----Selenium Errors-----------
-#------Webdriver-------
+# -------------------------------
+# -----Selenium Errors-----------
+# ------Webdriver-------
+
+
 class FailedToAddOptionsArgumentError(Exception):
-  pass
+    pass
+
+
 class DriverInitializationError(Exception):
-  pass
+    pass
+
+
 class ErrorScrollingPage(Exception):
-  pass
-#----VSCO Scraper
+    pass
+# ----VSCO Scraper
+
+
 class VSCOSignInError(Exception):
-  pass
-#----X Scraper
+    pass
+# ----X Scraper
+
+
 class XSignInError(Exception):
-  pass
-#----Instagram Scraper
+    pass
+# ----Instagram Scraper
+
+
 class InstaSignInError(Exception):
-  pass
-#-----Shared
+    pass
+# -----Shared
+
+
 class NoImagesFoundInGalleryError(Exception):
-  pass
+    pass
+
+
 class UsernameNotFoundError(Exception):
-  pass
+    pass
+
+
 class ImageDownloadError(Exception):
-  pass
-##-------------System Directory Errors------
+    pass
+# -------------System Directory Errors------
+
+
 class NoImagesInDirectoryError(Exception):
     pass
+
+
 class NoFaceDetectedInReferenceImage(Exception):
     pass
+
+
 class InfoDictFormatError(Exception):
     pass
+
+
 class FileOrDirPermissionDeniedError(Exception):
     pass
+
+
 class OperationNotSupportedError(Exception):
     pass
+
+
 class OperationResultsInEmptyDirectoryError(Exception):
     pass
-#-------------Torch Errors-----------------------------
+# -------------Torch Errors-----------------------------
+
+
 class TorchNotInstalledError(Exception):
-  pass
+    pass

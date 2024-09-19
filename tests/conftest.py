@@ -2,6 +2,9 @@ from PIL import Image
 import numpy as np
 import tempfile
 from pathlib import Path
+import sys
+
+sys.path.append('./src')
 
 
 def create_random_image(filename, path):

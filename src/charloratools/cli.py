@@ -118,8 +118,23 @@ def install_torch_cuda(cuda_version: str | None) -> None:
         else:
             print(result.stdout)
 
+    elif cuda_version.startswith("12.4"):
+        logging.info("Installing Torch for CUDA 12.4")
+        # pip install torch torchvision torchaudio --index-url
+        # https://download.pytorch.org/whl/cu124
+        cu124_args = [EXECUTABLE, "-m", "pip", "install", "torch",
+                      "torchvision",
+                      "torchaudio", "--index-url",
+                      "https://download.pytorch.org/whl/cu124"]
+        result = run_os_command(cu124_args)
+        if result.returncode != 0:
+            raise RuntimeError(
+                f"Error while installing Torch with CUDA 12 : {result.stderr}")
+        else:
+            print(result.stdout)
+
     elif cuda_version.startswith("12"):
-        logging.info("Installing Torch for CUDA 12")
+        logging.info("Installing Torch for CUDA 12.1")
         # pip install torch torchvision torchaudio --index-url
         # https://download.pytorch.org/whl/cu121
         cu12_args = [EXECUTABLE, "-m", "pip", "install", "torch",

@@ -231,8 +231,10 @@ class ImgManager:
                     self.deleted = False
                 else:
                     fn = self.fname
+                    rw = img_resized.width
+                    rh = img_resized.height
                     img_resized.save(
-                        output_dir/f"{fn}_{new_width}_{new_height}.{self.ext}",
+                        output_dir/f"{fn}_{rw}_{rh}.{self.ext}",
                         quality=95)
         except Exception as e:
             raise errors.ImgOperationError(
@@ -512,8 +514,9 @@ class GalleryManager:
             # Creating new dir
             if other.hashtype != self.hashtype:
                 other.change_hashtype(self.hashtype)
-            new_dir_name = Path(f"{self.ext_dir}") / \
-                Path(f"{self.basename}_add_{other.basename}")
+            s_base = self.basename
+            nn = f"{s_base}_add_{other.basename}_{utils.GetUniqueDtStr()}"
+            new_dir_name = Path(f"{self.ext_dir}") / Path(nn)
             new_dir_name = utils.dirisvalid(
                 new_dir_name,
                 create_if_not_found=True,
@@ -626,6 +629,7 @@ class GalleryManager:
             return self
         elif isinstance(other, ImgManager):
             other.copy_to(self.path)
+            return self
         else:
             raise errors.OperationNotSupportedError("Operation not supported")
 
@@ -649,6 +653,7 @@ class GalleryManager:
             for imgmanager in self:
                 if imgmanager == other:
                     imgmanager.delete()
+            return self
         else:
             raise errors.OperatorNotSupportedError(
                 f'Operation not supported for type {type(other)}')
@@ -773,10 +778,25 @@ class GalleryManager:
         if not inplace:
             output_dir = utils.dirisvalid(
                 output_dir, create_if_not_found=True, show_tqdm=self.show_tqdm)
-        for i in self:
-            i.resize(max_size, keep_aspect_ratio, size, inplace, output_dir)
-        if not inplace:
-            return GalleryManager(path=output_dir, hashtype=self.hashtype)
+            if keep_aspect_ratio:
+                for i in self:
+                    i.resize(max_size, True, None, False, output_dir)
+                return GalleryManager(path=output_dir, hashtype=self.hashtype)
+
+            else:
+                for i in self:
+                    i.resize(max_size, False, size, False, output_dir)
+                return GalleryManager(path=output_dir, hashtype=self.hashtype)
+
+        else:
+            if keep_aspect_ratio:
+                for i in self:
+                    i.resize(max_size, True, None, True, None)
+                return self
+            else:
+                for i in self:
+                    i.resize(max_size, False, size, True, None)
+                return self
 
     @refresh_decorator
     def get_img_manager_index(self, img_manager: ImgManager):
@@ -854,7 +874,8 @@ class TmpManager(GalleryManager):
         # Transfer contents to a permanent location if needed
         if self.save_content_on_deletion and len(self) != 0:
             for img in self:
-                img.copy_to(self.output_dir)
+                if img.basename != "placeholder.jpg":
+                    img.copy_to(self.output_dir)
         self.temp_dir.cleanup()
         self.is_open = False
 

@@ -1,4 +1,8 @@
-![build](https://github.com/svdC1/charloratools/actions/workflows/test-publish-package.yml/badge.svg) ![tests](https://github.com/svdC1/charloratools/actions/workflows/lint-run-tests.yml/badge.svg)
+![build](https://github.com/svdC1/charloratools/actions/workflows/test-publish-package.yml/badge.svg)
+
+![tests](https://github.com/svdC1/charloratools/actions/workflows/lint-run-tests.yml/badge.svg)
+
+[![codecov](https://codecov.io/github/svdC1/charloratools/branch/main/graph/badge.svg?token=C6VUUTO5PN)](https://codecov.io/github/svdC1/charloratools)
 
 
 ## ![Charloratools Logo](https://imagedelivery.net/YCQ3OFRYiR1R_AeUslNHiw/88185031-1ee7-40df-e3e8-d632d668c600/w=1280,h=640,fit=crop)

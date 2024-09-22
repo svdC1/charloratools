@@ -1,7 +1,7 @@
 [pylint]
 ignore=
-    __init__.py
-    facenet_pytorch
+    src/charloratools/__init__.py
+    src/charliratools/facenet_pytorch/*
 disable=
     import-error,
     missing-module-docstring,
@@ -37,4 +37,6 @@ disable=
     import-outside-toplevel,
     not-callable,
     consider-iterating-dictionary,
-    unbalanced-tuple-unpacking
+    unbalanced-tuple-unpacking,
+    no-member,
+    missing-final-newline,

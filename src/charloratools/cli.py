@@ -31,7 +31,12 @@ def get_cuda_version() -> str | None:
      Checks if CUDA is available, if it is , return the CUDA version installed
     """
     logging.info("Checking if CUDA is available...")
-    nvidia_smi = run_os_command(['nvidia-smi'])
+    try:
+        nvidia_smi = run_os_command(['nvidia-smi'])
+    except FileNotFoundError:
+        logging.info("CUDA not available - File Not Found Error")
+        return None
+    
     if nvidia_smi.returncode != 0:
         logging.warning("CUDA is not available.")
         return None

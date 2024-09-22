@@ -23,7 +23,7 @@ disable=
     logging-fstring-interpolation,
     no-else-raise,
     use-maxsplit-arg,
-    unnecessary-compreheension,
+    unnecessary-comprehension,
     self-assigning-variable,
     redefined-builtin,
     unspecified-encoding,

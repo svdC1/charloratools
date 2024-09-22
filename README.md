@@ -1,4 +1,4 @@
-[!build](https://github.com/svdC1/charloratools/actions/workflows/test-publish-pypi.yml/badge.svg)
+![build](https://github.com/svdC1/charloratools/actions/workflows/test-publish-package.yml/badge.svg)
 
 ## ![Charloratools Logo](https://imagedelivery.net/YCQ3OFRYiR1R_AeUslNHiw/88185031-1ee7-40df-e3e8-d632d668c600/w=1280,h=640,fit=crop)
 

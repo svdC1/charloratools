@@ -58,7 +58,12 @@ jobs:
       #Step 8: Run Tests and Coverage
       - name: Run Pytest and Cov
         run: |
-          pytest --cov=src/charloratools/ tests/
+          pytest --cov=src/charloratools/ --cov-report=xml tests/
+
+      - name: Upload results to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
 
       #Step 9: Lint
       - name: Lint

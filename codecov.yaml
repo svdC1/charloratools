@@ -1,0 +1,29 @@
+# ... previous config options...
+
+component_management:
+  default_rules:  # default rules that will be inherited by all components
+    statuses:
+      - type: project # in this case every component that doens't have a status defined will have a project type one
+        target: auto
+        branches:
+          - "!main"
+  individual_components:
+    - component_id: module_filters  # this is an identifier that should not be changed
+      name: FilterAI Module  # this is a display name, and can be changed freely
+      paths:
+        - src/charloratools/FilterAI**
+
+    - component_id: module_utils
+      name: Utils
+      paths:
+        - src/charloratools/utils**
+
+    - component_id: module_scrapers
+      name: Scrapers
+      paths:
+        - src/charloratools/Scrapers**
+
+    - component_id: module_file_manager
+      name: SysFileManager
+      paths: 
+        - src/charloratools/SysFileManager**

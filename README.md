@@ -1,11 +1,9 @@
-![build](https://github.com/svdC1/charloratools/actions/workflows/test-publish-package.yml/badge.svg)
-
-![tests](https://github.com/svdC1/charloratools/actions/workflows/lint-run-tests.yml/badge.svg)
-
-[![codecov](https://codecov.io/github/svdC1/charloratools/branch/main/graph/badge.svg?token=C6VUUTO5PN)](https://codecov.io/github/svdC1/charloratools)
-
-
 ## ![Charloratools Logo](https://imagedelivery.net/YCQ3OFRYiR1R_AeUslNHiw/88185031-1ee7-40df-e3e8-d632d668c600/w=1280,h=640,fit=crop)
+
+>![build](https://github.com/svdC1/charloratools/actions/workflows/test-publish-package.yml/badge.svg)
+>![tests](https://github.com/svdC1/charloratools/actions/workflows/lint-run-tests.yml/badge.svg)
+>[![codecov](https://codecov.io/github/svdC1/charloratools/branch/main/graph/badge.svg?token=C6VUUTO5PN)](https://codecov.io/github/svdC1/charloratools)
+
 
 ### This is a simple python library which intends to **facilitate the process of image gathering,filtering and processing when creating a training dataset to use for training stable diffusion LoRas**. As the name suggests it is specifically useful when organizing a *character lora* image training dataset.
 

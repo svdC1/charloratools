@@ -58,16 +58,12 @@ jobs:
       #Step 8: Run Tests and Coverage
       - name: Run Pytest and Cov
         run: |
-          pytest --cov=src/charloratools tests/
+          pytest --cov=src tests/
 
       #Step 9: Lint
-      - name: Lint 
-        uses: sunnysid3up/python-linter@master
-        with:
-          source: "src"
-          mypy-options: "--ignore-missing-imports --show-error-codes"
-          pylint-options: "--rcfile=.pylintrc"
-          isort-options: "-w 100"
-          django: false
-         
+      - name: Lint
+        run: |
+          pylint --recursive=y src
+          flake8 src/charloratools
+           
           

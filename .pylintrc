@@ -49,5 +49,6 @@ disable=
     unreachable,
     super-init-not-called,
     too-many-return-statements,
+    attribute-defined-outside-init,
     
     

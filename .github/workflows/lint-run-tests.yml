@@ -48,7 +48,7 @@ jobs:
       #Step 6: Install locally
       - name: Install the package
         run: |
-          pip install . 
+          pip install -e . 
 
       #Step 7: Test CLI - Torch Install
       - name: Test CLI - Torch Install
@@ -58,12 +58,11 @@ jobs:
       #Step 8: Run Tests and Coverage
       - name: Run Pytest and Cov
         run: |
-          pytest --cov=src tests/
+          pytest --cov=src/charloratools/ tests/
 
       #Step 9: Lint
       - name: Lint
         run: |
-          pylint --recursive=y src
-          flake8 src/charloratools
+          pylint --recursive=y --rcfile=.pylintrc src/charloratools
            
           

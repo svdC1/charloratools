@@ -45,3 +45,6 @@ disable=
     consider-using-f-string,
     multiple-imports,
     ungrouped-imports,
+    missing-timeout,
+    unreachable,
+    

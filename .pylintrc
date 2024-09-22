@@ -42,4 +42,6 @@ disable=
     missing-final-newline,
     too-many-locals,
     too-many-statements,
-    consider-using-f-string
+    consider-using-f-string,
+    multiple-imports,
+    ungrouped-imports,

@@ -14,5 +14,4 @@ def __getattr__(name):
                         to install it."""
                 ) from None
             else:
-                raise
-    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+                raise AttributeError(f"module '{__name__}' has no attribute '{name}'")

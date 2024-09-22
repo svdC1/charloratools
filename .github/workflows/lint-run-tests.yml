@@ -63,6 +63,6 @@ jobs:
       #Step 9: Lint
       - name: Lint
         run: |
-          pylint --recursive=y --rcfile=.pylintrc src/charloratools
+          pylint --recursive=y --rcfile=.pylintrc src
            
           

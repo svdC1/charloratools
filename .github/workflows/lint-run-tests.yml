@@ -1,0 +1,74 @@
+name: Lint and Run Pytest
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+  
+
+jobs:
+  lint-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository
+      - name: Check out the repository
+        uses: actions/checkout@v4
+        with:
+          submodules: True
+
+      - name: Initialize and update submodules
+        run: |
+          git submodule update --init --recursive
+
+      # Step 2: Set up Python 3.11
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Step 3: Install build tools
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install build twine pytest pytest-cov coverage flake8 black mypy isort pylint
+
+      # Step 4: Install dependencies
+      - name: Install dependencies
+        run: |
+          pip install cython>=3.0.2
+          pip install pybind11
+          
+
+      # Step 5: Build the package
+      - name: Build the package
+        run: |
+          python -m build
+
+      #Step 6: Install locally
+      - name: Install the package
+        run: |
+          pip install . 
+
+      #Step 7: Test CLI - Torch Install
+      - name: Test CLI - Torch Install
+        run: |
+          charloratools install_torch
+
+      #Step 8: Run Tests and Coverage
+      - name: Run Pytest and Cov
+        run: |
+          pytest --cov=src/charloratools tests/
+
+      #Step 9: Lint
+      - name: Lint 
+        uses: sunnysid3up/python-linter@master
+        with:
+         source: "src"
+         mypy-options: "--show-error-codes"
+         pylint-options: ""
+         isort-options: "-w 100"
+         django: false 
+
+         
+          

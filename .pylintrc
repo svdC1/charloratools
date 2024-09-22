@@ -40,3 +40,6 @@ disable=
     unbalanced-tuple-unpacking,
     no-member,
     missing-final-newline,
+    too-many-locals,
+    too-many-statements,
+    consider-using-f-string

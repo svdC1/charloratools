@@ -50,5 +50,6 @@ disable=
     super-init-not-called,
     too-many-return-statements,
     attribute-defined-outside-init,
+    broad-exception-caught,
     
     

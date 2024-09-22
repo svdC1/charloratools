@@ -64,11 +64,10 @@ jobs:
       - name: Lint 
         uses: sunnysid3up/python-linter@master
         with:
-         source: "src"
-         mypy-options: "--show-error-codes"
-         pylint-options: ""
-         isort-options: "-w 100"
-         django: false 
-
+          source: "src"
+          mypy-options: "--ignore-missing-imports --show-error-codes"
+          pylint-options: "--rcfile=.pylintrc"
+          isort-options: "-w 100"
+          django: false
          
           

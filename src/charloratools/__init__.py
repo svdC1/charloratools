@@ -13,5 +13,5 @@ def __getattr__(name):
                         not installed.Please run 'charloratools install_torch'
                         to install it."""
                 ) from None
-            else:
-                raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+                
+            raise AttributeError(f"module '{__name__}' has no attribute '{name}'")

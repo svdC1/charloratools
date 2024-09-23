@@ -11,19 +11,19 @@ component_management:
     - component_id: module_filters  # this is an identifier that should not be changed
       name: FilterAI Module  # this is a display name, and can be changed freely
       paths:
-        - src/charloratools/FilterAI**
+        - .*/FilterAI.py
 
     - component_id: module_utils
       name: Utils
       paths:
-        - src/charloratools/utils**
+        - .*/utils.py
 
     - component_id: module_scrapers
       name: Scrapers
       paths:
-        - src/charloratools/Scrapers**
+        - .*/Scrapers.py
 
     - component_id: module_file_manager
       name: SysFileManager
       paths: 
-        - src/charloratools/SysFileManager**
+        - .*/SysFileManager.py

@@ -39,3 +39,14 @@ def test_dirisvalid(opts, expected):
 def test_dir_to_tensor():
     t = clt.utils.dir_path_to_img_batch(temp_dir_paths[0])
     assert (isinstance(t, torch.Tensor) and t.shape[0] == 3)
+
+
+@pytest.mark.parametrize("opts,expected",
+                         [((temp_dir_paths[0] / "im1.png", None), 100),
+                          ((temp_dir_paths[0] / "im1.png", (300, 300)), 300)
+                          ])
+def test_img_to_tensor(opts, expected):
+    img_path = opts[0]
+    nsize = opts[1]
+    t = clt.utils.img_path_to_tensor(img_path, nsize)
+    assert (isinstance(t, torch.Tensor) and t.shape[1] == expected)

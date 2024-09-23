@@ -29,3 +29,8 @@ def setup_dirs():
     return [temp_dir1, temp_dir2, temp_dir3,
             temp_dir4, temp_dir_paths,
             temp_dir1_imgs, temp_dir2_imgs]
+
+
+def cleanup(tempdirs: list):
+    for tempdir in tempdirs:
+        tempdir.cleanup()

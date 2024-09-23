@@ -36,7 +36,7 @@ def get_cuda_version() -> str | None:
     except FileNotFoundError:
         logging.info("CUDA not available - File Not Found Error")
         return None
-    
+
     if nvidia_smi.returncode != 0:
         logging.warning("CUDA is not available.")
         return None

@@ -1,7 +1,10 @@
 import pytest
 import charloratools as clt
 import torch
-from conftest import setup_dirs
+import tempfile
+from conftest import setup_dirs, create_empty_txt_file
+from pathlib import Path
+from charloratools.errors import InvalidInputError
 
 (temp_dir1, temp_dir2, temp_dir3, temp_dir4,
  temp_dir_paths, temp_dir1_imgs, temp_dir2_imgs) = setup_dirs()
@@ -50,3 +53,18 @@ def test_img_to_tensor(opts, expected):
     nsize = opts[1]
     t = clt.utils.img_path_to_tensor(img_path, nsize)
     assert (isinstance(t, torch.Tensor) and t.shape[1] == expected)
+
+
+def test_img_path_to_tensor_non_image():
+    temp = tempfile.TemporaryDirectory()
+    invalid_img_path = create_empty_txt_file("Test", temp.name)
+
+    with pytest.raises(InvalidInputError):
+        clt.utils.img_path_to_tensor(invalid_img_path)
+    temp.cleanup()
+
+
+def test_img_path_to_tensor_missing_file():
+    missing_img_path = Path("missing_image.jpg")
+    with pytest.raises(FileNotFoundError):
+        clt.utils.img_path_to_tensor(missing_img_path)

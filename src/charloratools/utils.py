@@ -421,6 +421,10 @@ def img_path_to_tensor(img_path, nsize=None):
     else:
         raise errors.InvalidInputError("img_path must be str or Path object")
 
+    if not ipath.suffix.lower().endswith(('.png', '.jpg', '.jpeg', '.tiff',
+                                         '.ppm', '.bmp', '.gif')):
+        raise errors.InvalidInputError("File Type Not Supported")
+
     with Image.open(ipath) as img:
         if nsize:
             if not isinstance(nsize, tuple):

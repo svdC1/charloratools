@@ -818,13 +818,18 @@ class TmpManager(GalleryManager):
                  hashtype: str,
                  save_content_on_deletion: bool = False,
                  output_dir: str | Path | None = None):
+        self.temp_dir = None
         # initializing gallery manager attrs
         if output_dir is None:
             output_dir = None
         elif isinstance(output_dir, str):
             output_dir = Path(output_dir).resolve()
+            if not output_dir.exists():
+                raise errors.InvalidInputError("Output Dir Doesn't Exist")
         elif isinstance(output_dir, Path):
             output_dir = output_dir.resolve()
+            if not output_dir.exists():
+                raise errors.InvalidInputError("Output Dir Doesn't Exist")
         else:
             raise errors.InvalidInputError(
                 "output_dir must be str or path-like object")
@@ -839,7 +844,6 @@ class TmpManager(GalleryManager):
         self.image_paths = None
         # --
         self.prev_tempdir_var = None
-        self.temp_dir = None
         self.tmp_path = None
         self.hashtype = hashtype
         self.save_content_on_deletion = save_content_on_deletion
@@ -876,9 +880,11 @@ class TmpManager(GalleryManager):
             for img in self:
                 if img.basename != "placeholder.jpg":
                     img.copy_to(self.output_dir)
-        self.temp_dir.cleanup()
+        if self.temp_dir is not None:
+            self.temp_dir.cleanup()
         self.is_open = False
 
     def __del__(self):
         # Ensure cleanup if not already done
-        self.temp_dir.cleanup()
+        if self.temp_dir is not None:
+            self.temp_dir.cleanup()

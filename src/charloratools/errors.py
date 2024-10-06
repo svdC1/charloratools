@@ -77,6 +77,10 @@ class NoImagesFoundInGalleryError(Exception):
     pass
 
 
+class NoImagesFoundError(Exception):
+    pass
+
+
 class UsernameNotFoundError(Exception):
     pass
 

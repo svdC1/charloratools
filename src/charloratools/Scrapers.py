@@ -274,7 +274,7 @@ class XScraper:
         h = f"headless={self.headless}"
         i = f"incognito={self.incognito}"
         ad = f"add_arguments={self.add_arguments}"
-        wt = f"webdriver_timeout={self.webdriver_timeout}"
+        wt = f"webdriver_timeout={self.webdriver_wait_timeout}"
         return f"XScraper({u}, {p}, {h}, {i}, {ad}, {wt})"
 
     def __enter__(self):

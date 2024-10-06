@@ -133,3 +133,33 @@ def test_gm_duplicates(hashtype):
     gm1 += gm1[0]
     gm1.delete_duplicates()
     assert len(gm1) == 7
+
+
+def test_tmp_manager_invalid_output_dir():
+    invalid_dir = Path("/invalid/path")
+
+    with pytest.raises(clt.errors.InvalidInputError):
+        with clt.SysFileManager.TmpManager(hashtype='sha256',
+                                           output_dir=invalid_dir):
+            pass
+
+
+def test_tmp_manager_non_image_files():
+    with clt.SysFileManager.TmpManager(hashtype='sha256',
+                                       output_dir=Path("/tmp")) as manager:
+        non_image_file = manager.tmp_path / "test.txt"
+        with open(non_image_file, "w") as f:
+            f.write("This is a test file.")
+
+        assert non_image_file.exists()
+
+
+def test_tmp_manager_cleanup_on_exception():
+    try:
+        with clt.SysFileManager.TmpManager(hashtype='sha256',
+                                           output_dir=Path("/tmp")) as manager:
+            raise RuntimeError("Simulated error")
+    except RuntimeError:
+        pass
+
+    assert not manager.is_open

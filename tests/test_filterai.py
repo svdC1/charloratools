@@ -1,5 +1,7 @@
 from conftest import setup_dirs, download_test_images, cleanup
+from conftest import download_test_faces
 import pytest
+import tempfile
 import charloratools as clt
 from tempfile import TemporaryDirectory as tmp
 from pathlib import Path
@@ -162,3 +164,24 @@ def test_multiple_face_prob():
     clean_tmp.cleanup()
 
     assert gm_len == 2
+
+
+def test_save_images_with_detection_box():
+    tempdir = download_test_faces()
+    temp_out = tempfile.TemporaryDirectory()
+    temp_out_db = tempfile.TemporaryDirectory()
+    t_out_path = Path(temp_out.name).resolve()
+    tdb_out_path = Path(temp_out_db.name).resolve()
+    tdir_path = Path(tempdir.name).resolve()
+
+    fr = clt.FilterAI.FaceRecognizer(tdir_path)
+    gm, info = fr.filter_images_without_face(output_dir=t_out_path,
+                                             return_info=True)
+    idl = info['info_dict_lst']
+    gm_db = fr.save_images_with_detection_box(info_dict_lst=idl,
+                                              output_dir=tdb_out_path)
+    gm_db_len = len(gm_db)
+    tempdir.cleanup
+    temp_out.cleanup
+    temp_out_db.cleanup()
+    assert gm_db_len == 3

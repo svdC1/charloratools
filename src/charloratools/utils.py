@@ -226,7 +226,7 @@ def InfoDict2Pandas(info: dict | list):
         else:
             raise errors.InfoDictFormatError('Did not find info_dict_lst key')
     else:
-        for d in info['info_dict_lst']:
+        for d in info:
             if not isinstance(d, dict):
                 raise errors.InfoDictFormatError(
                     'info_dict_lst must be a list of dicts')
@@ -299,6 +299,20 @@ def InfoDict2Pandas(info: dict | list):
     return out
 
 
+def is_matched(df_el):
+    if df_el['matched'] is True:
+        return df_el
+    else:
+        return None
+
+
+def not_is_matched(df_el):
+    if df_el['matched'] is False:
+        return df_el
+    else:
+        return None
+
+
 def split_matched(info_dict: dict | list):
     """
     Separates an info dict returned by FaceRecognizer filtering methods to
@@ -312,16 +326,17 @@ def split_matched(info_dict: dict | list):
     if len(info_df) == 0:
         out = {'info_df': {'matched': None, 'not_matched': None}}
     else:
-        matched = info_df[info_df['matched'] is True].copy()
-        not_matched = info_df[info_df['matched'] is False].copy()
+        matched = info_df.apply(is_matched, axis=1).dropna().copy()
+        not_matched = info_df.apply(not_is_matched, axis=1).dropna().copy()
         out = {'info_df': {'matched': matched, 'not_matched': not_matched}}
     if 'matched_ref_df' in info_out.keys():
         ref_df = info_out['matched_ref_df']
         if len(ref_df) == 0:
             out['matched_ref_df'] = {'matched': None, 'not_matched': None}
         else:
-            ref_matched = ref_df[ref_df['matched'] is True].copy()
-            ref_not_matched = ref_df[ref_df['matched'] is False].copy()
+            ref_matched = ref_df.apply(is_matched, axis=1).dropna().copy()
+            ref_not_matched = ref_df.apply(not_is_matched,
+                                           axis=1).dropna().copy()
             out['matched_ref_df'] = {
                 'matched': ref_matched, 'not_matched': ref_not_matched}
     return out
@@ -390,8 +405,8 @@ def download_from_src(srcs, prefix, save_path, logger):
         for i, src in tqdm(zip(range(len(srcs)), srcs),
                            desc='Downloading Images...'):
             try:
-                image_name = save_path / \
-                    f'{prefix}_{datetime.now().strftime("%m%d%y%H%M%S%f")}.jpg'
+                s = f'{prefix}_{datetime.now().strftime("%m%d%y%H%M%S%f")}.jpg'
+                image_name = save_path / s
                 r = requests.get(src)
                 with open(image_name, 'wb') as f:
                     f.write(r.content)
@@ -452,8 +467,14 @@ def dir_path_to_img_batch(path):
     if not dir_path.is_dir():
         raise errors.InvalidInputError("path is not directory")
 
+    # Convert PNG to RGB
+    png_tensors = [img_path_to_tensor(i)[:3, :, :] for i in dir_path.iterdir(
+    ) if i.suffix.endswith(".png")]
+
     tensors = [img_path_to_tensor(i) for i in dir_path.iterdir(
-    ) if i.suffix.endswith((".png", ".jpg"))]
+    ) if i.suffix.endswith(".jpg")]
+
+    tensors += png_tensors
     dir_max_width = max([t.shape[1] for t in tensors])
     dir_max_height = max([t.shape[2] for t in tensors])
     transform = v2.Compose([v2.ToImage(), v2.Resize(

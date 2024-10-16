@@ -3,6 +3,7 @@ ignore=
     src/charloratools/__init__.py
     src/charliratools/facenet_pytorch/*
 disable=
+    too-many-lines,
     import-error,
     missing-module-docstring,
     missing-function-docstring,

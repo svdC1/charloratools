@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "charloratools"
-version = "1.0.5"
+version = "1.0.6"
 description = "Python package including tools that facilitate training images scraping, management, and filtering for stable diffusion character LoRa training."
 requires-python = ">=3.11"
 
@@ -76,7 +76,7 @@ charloratools = "charloratools.cli:main"
 [project.urls]
 
 repository = "https://github.com/svdC1/charloratools"
-documentation = "https://github.com/svdC1/charloratools/wiki"
+documentation = "https://svdc1.github.io/charloratools/"
 
 [tool.pytest.ini_options]
 log_cli = true

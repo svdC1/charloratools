@@ -2,13 +2,14 @@ from setuptools import setup, find_packages
 
 setup(
     name="charloratools",
-    version="1.0.5",
+    version="1.0.6",
     description="""Python package including tools that facilitate training
     images scraping, management, and filtering for stable diffusion
     character LoRa training.""",
     packages=find_packages(where="src", include=[
                            'charloratools',
                            'charloratools.*',
+                           'tests/conftest.py'
                            'charloratools/facenet_pytorch',
                            'charloratools/facenet_pytorch.*',
                            'charloratools/facenet_pytorch/data/*']),

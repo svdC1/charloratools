@@ -98,7 +98,6 @@ TorchNotInstalledError
 """
 
 
-# -------Image Errors--------
 class ImageIsUnopenableError(Exception):
     """
     Exception raised when an image cannot be opened.
@@ -106,7 +105,6 @@ class ImageIsUnopenableError(Exception):
     This error is raised for issues related to opening an image file,
     such as corruption or incorrect format.
     """
-    pass
 
 
 class ImageTypeNotSupportedError(Exception):
@@ -116,7 +114,6 @@ class ImageTypeNotSupportedError(Exception):
     This error indicates that the image file format is not supported
     by the application.
     """
-    pass
 
 
 class ImageIsDeletedError(Exception):
@@ -126,7 +123,6 @@ class ImageIsDeletedError(Exception):
     This error indicates that the image has been marked as deleted
     and cannot be processed.
     """
-    pass
 
 
 class ImgDeleteError(Exception):
@@ -136,7 +132,6 @@ class ImgDeleteError(Exception):
     This error is raised if an operation to delete an image fails
     due to an underlying issue (like file access permissions).
     """
-    pass
 
 
 class ImgOperationError(Exception):
@@ -146,7 +141,6 @@ class ImgOperationError(Exception):
     This error indicates a failure in performing an operation on an image
     that is not covered by more specific exceptions.
     """
-    pass
 
 
 class ImgHashNotSupportedError(Exception):
@@ -156,10 +150,6 @@ class ImgHashNotSupportedError(Exception):
     This error indicates a failure to use the specified hashing method
     for image comparison.
     """
-    pass
-# ---------------------------
-# ------General Errors-------
-# Global Errors
 
 
 class InvalidTypeError(Exception):
@@ -168,7 +158,6 @@ class InvalidTypeError(Exception):
 
     This error indicates that a value does not match the expected type.
     """
-    pass
 
 
 class OutOfRangeError(Exception):
@@ -178,7 +167,6 @@ class OutOfRangeError(Exception):
     This error is raised when a parameter value exceeds or falls below
     defined boundaries.
     """
-    pass
 
 
 class InvalidInputError(Exception):
@@ -188,7 +176,6 @@ class InvalidInputError(Exception):
     This error indicates that the input provided does not meet
     the validation requirements.
     """
-    pass
 
 
 class InvalidPathError(Exception):
@@ -198,10 +185,6 @@ class InvalidPathError(Exception):
     This error indicates that the provided path does not exist
     or is not accessible.
     """
-    pass
-# -------------------------------
-# -----Selenium Errors-----------
-# ------Webdriver-------
 
 
 class FailedToAddOptionsArgumentError(Exception):
@@ -212,7 +195,6 @@ class FailedToAddOptionsArgumentError(Exception):
     This error flags problems encountered when configuring the
     Selenium WebDriver, such as invalid option arguments.
     """
-    pass
 
 
 class DriverInitializationError(Exception):
@@ -222,7 +204,6 @@ class DriverInitializationError(Exception):
     This error indicates that the driver could not be created,
     often due to environment issues or configuration errors.
     """
-    pass
 
 
 class ErrorScrollingPage(Exception):
@@ -232,8 +213,6 @@ class ErrorScrollingPage(Exception):
     This error indicates issues encountered during the scrolling
     process with the Selenium WebDriver.
     """
-    pass
-# ----VSCO Scraper
 
 
 class VSCOSignInError(Exception):
@@ -242,8 +221,6 @@ class VSCOSignInError(Exception):
 
     This error indicates that a sign-in attempt to VSCO has failed.
     """
-    pass
-# ----X Scraper
 
 
 class XSignInError(Exception):
@@ -252,8 +229,6 @@ class XSignInError(Exception):
 
     This error indicates that a sign-in attempt to X has failed.
     """
-    pass
-# ----Instagram Scraper
 
 
 class InstaSignInError(Exception):
@@ -262,8 +237,6 @@ class InstaSignInError(Exception):
 
     This error indicates that a sign-in attempt to Instagram has failed.
     """
-    pass
-# -----Shared
 
 
 class NoImagesFoundInGalleryError(Exception):
@@ -273,7 +246,6 @@ class NoImagesFoundInGalleryError(Exception):
     This error indicates that a gallery operation is attempted but there
     are no images available.
     """
-    pass
 
 
 class NoImagesFoundError(Exception):
@@ -283,7 +255,6 @@ class NoImagesFoundError(Exception):
     This error indicates that an operation expected images but
     found none.
     """
-    pass
 
 
 class UsernameNotFoundError(Exception):
@@ -293,7 +264,6 @@ class UsernameNotFoundError(Exception):
     This error indicates that an operation was unable to locate the
     specified username in relevant contexts, such as scraping.
     """
-    pass
 
 
 class ImageDownloadError(Exception):
@@ -303,8 +273,6 @@ class ImageDownloadError(Exception):
     This error indicates that there was a failure in retrieving an
     image from a specified source.
     """
-    pass
-# -------------System Directory Errors------
 
 
 class NoImagesInDirectoryError(Exception):
@@ -314,7 +282,6 @@ class NoImagesInDirectoryError(Exception):
     This error indicates that an operation that required images
     found none in the given directory.
     """
-    pass
 
 
 class NoFaceDetectedInReferenceImage(Exception):
@@ -324,7 +291,6 @@ class NoFaceDetectedInReferenceImage(Exception):
     This error indicates that a required face for processing was not found
     in the specified image.
     """
-    pass
 
 
 class InfoDictFormatError(Exception):
@@ -334,7 +300,6 @@ class InfoDictFormatError(Exception):
     This error indicates that the provided dictionary does not conform
     to the expected structure or content.
     """
-    pass
 
 
 class FileOrDirPermissionDeniedError(Exception):
@@ -344,7 +309,6 @@ class FileOrDirPermissionDeniedError(Exception):
     This error indicates issues with permissions preventing file or
     directory operations from succeeding.
     """
-    pass
 
 
 class OperationNotSupportedError(Exception):
@@ -354,7 +318,6 @@ class OperationNotSupportedError(Exception):
     This error indicates that the functionality requested cannot be
     fulfilled based on the current context or parameters.
     """
-    pass
 
 
 class OperationResultsInEmptyDirectoryError(Exception):
@@ -364,8 +327,6 @@ class OperationResultsInEmptyDirectoryError(Exception):
     This error indicates that the requested operation would lead to
     no files being available wherever applicable.
     """
-    pass
-# -------------Torch Errors-----------------------------
 
 
 class TorchNotInstalledError(Exception):
@@ -375,4 +336,3 @@ class TorchNotInstalledError(Exception):
     This error indicates that PyTorch is necessary for operations
     but cannot be found in the environment.
     """
-    pass

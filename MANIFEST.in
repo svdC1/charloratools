@@ -1,1 +1,2 @@
+graft tests
 recursive-include src/charloratools/facenet_pytorch *

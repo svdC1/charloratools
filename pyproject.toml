@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "charloratools"
-version = "1.0.4"
+version = "1.0.5"
 description = "Python package including tools that facilitate training images scraping, management, and filtering for stable diffusion character LoRa training."
 requires-python = ">=3.11"
 
@@ -50,10 +50,23 @@ dev = ["coverage>=7.0.0,<8.0.0",
 "black"
 ]
 
-full= [
+cpu= [
   'torch',
   'torchvision',
   'torchaudio',
+]
+
+docs = ["black",
+"mkdocs",
+"mkdocstrings",
+"mkdocstrings-python",
+"mkdocs-autorefs",
+"mkdocs-get-deps",
+"mkdocs-material>9.5.0",
+"mkdocs-material-extensions",
+"markdown",
+"pymdown-extensions",
+"Pygments"
 ]
 
 [project.scripts]

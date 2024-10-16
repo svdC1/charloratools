@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="charloratools",
-    version="1.0.2",
+    version="1.0.5",
     description="""Python package including tools that facilitate training
     images scraping, management, and filtering for stable diffusion
     character LoRa training.""",
@@ -23,6 +23,16 @@ setup(
                 "twine",
                 "pytest-cov"
                 ],
-        'full': ['torch', 'torchvision', 'torchaudio']
+        'cpu': ['torch', 'torchvision', 'torchaudio'],
+        'docs': ["black", "mkdocs",
+                 "mkdocstrings",
+                 "mkdocstrings-python",
+                 "mkdocs-autorefs",
+                 "mkdocs-get-deps"
+                 "mkdocs-material>9.5.0",
+                 "mkdocs-material-extensions",
+                 "markdown",
+                 "pymdown-extensions",
+                 "Pygments"]
     }
 )

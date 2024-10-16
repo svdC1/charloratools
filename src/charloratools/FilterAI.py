@@ -1,3 +1,36 @@
+"""
+Functionalities
+---------------
+  - face detection and recognition using the `facenet_pytorch`
+  - Processing images in bulk
+  - Filtering images based on face detection
+  - Saving images with detection overlays.
+
+Classes
+-------
+FaceRecognizer
+    A class that utilizes pre-trained models from `facenet_pytorch`
+    to detect and recognize faces in a set of images.
+
+
+Raises
+------
+TorchNotInstalledError
+    Raised when the required PyTorch library is not found.
+InvalidInputError
+    Raised for invalid inputs related to image paths and parameters.
+NoFaceDetectedInReferenceImage
+    Raised when no face is detected in the provided reference image.
+
+Examples
+--------
+```python
+from charloratools.FilterAI import FaceRecognizer
+fr = FaceRecognizer('path/to/images')
+fr.filter_images_without_face('output/directory')
+```
+"""
+
 # Default Python Libs
 import logging
 from pathlib import Path
@@ -17,15 +50,23 @@ from . import SysFileManager
 
 class FaceRecognizer:
     """
-    Class for using facenet_pytorch pre-trained
-    models to detect and recognize faces.
-    Args:
-      path:str|Path= Path to a directory containing images
+    Class for using facenet_pytorch pre-trained models to detect
+    and recognize faces.
     """
 
     def __init__(self, path: str | Path):
         """
-        :param path str path to directory containing images
+        Initializes the FaceRecognizer with the specified image path.
+
+        Parameters
+        ----------
+        path : str or Path
+            Path to the directory containing images.
+
+        Raises
+        ------
+        TorchNotInstalledError
+            If PyTorch is not installed on the system.
         """
         try:
             import torch
@@ -50,6 +91,15 @@ class FaceRecognizer:
         self.gallery = SysFileManager.GalleryManager(path)
 
     def __str__(self):
+        """
+        Returns a string representation of the FaceRecognizer object.
+
+        Returns
+        -------
+        str
+            A descriptive string of the FaceRecognizer, including the path,
+            number of images, and used torch device.
+        """
         s = f"""
         FaceRecognizer Object,operating on directory:{self.path};
         With {len(self.gallery)} images;
@@ -58,12 +108,25 @@ class FaceRecognizer:
         return s
 
     def __repr__(self):
+        """
+        Returns a detailed string representation of the
+        FaceRecognizer instance.
+
+        Returns
+        -------
+        str
+            A representation string for the FaceRecognizer instance.
+        """
         return f"FaceRecognizer(path={self.path})"
 
     def change_directory(self, path: str | Path):
         """
-        Method to change instance's default dir for method usage
-        :param path str path to directory containing images
+        Changes the directory of the images used by the FaceRecognizer.
+
+        Parameters
+        ----------
+        path : str or Path
+            New path to the directory containing images.
         """
         self.gallery = SysFileManager.GalleryManager(path)
 
@@ -72,13 +135,31 @@ class FaceRecognizer:
                                    prob_threshold: float | None = None,
                                    return_info=False):
         """
-        Method to filter images without face
-        :param prob_threshold float threshold for face detection probability,
-        defaults to None
-        :param output_dir str path to directory where images will be saved
-        :param return_info bool whether to return detections info or not,
-        defaults to False
-        :param min_face_size int minimum face size in pixels,defaults to 20
+        Filters images that do not contain detected faces.
+
+        Parameters
+        ----------
+        output_dir : str or Path
+            Path to the directory where images will be saved.
+        min_face_size : int, optional
+            Minimum face size in pixels for detection. Defaults to 20.
+        prob_threshold : float, optional
+            Threshold for face detection probability. Defaults to None.
+        return_info : bool, optional
+            If True, returns detection information. Defaults to False.
+
+        Returns
+        -------
+        SysFileManager.GalleryManager or tuple
+            Returns the GalleryManager for the output directory.
+            If `return_info` is True,
+            returns a tuple containing the GalleryManager object
+            and a dictionary with filtering info.
+
+        Raises
+        ------
+        InvalidPathError
+            If the specified output directory is invalid.
         """
         # Check dir
         output_dir = utils.dirisvalid(
@@ -149,30 +230,45 @@ class FaceRecognizer:
                                             distance_function: str = 'cosine',
                                             return_info: bool = False):
         """
-        Method to filter images where the face in the
-        reference image provided is not present
-        :param ref_img_path str path to reference image
-        :param prob_threshold float threshold for final face detection
-        defaults to None
-        :param output_dir str path to directory where matched images will be
-        saved
-        :param distance_function str 'euclidean' or 'cosine' which distance
-        function to use when classifying faces as
-               equal or not,defaults to 'cosine'
-        :param distance_threshold float distance threshold for considering
-        faces equal, if distance_function='cosine'
-               represents the minimum value of cosine similarity the two image
-               tensors must have to be considered images
-               containing the same face. if distance_function='euclidean'
-               represents the maximum value of euclidean distance
-               the two image tensors are allowed to have in order to be
-               considered images of the same face,defaults to 0.6
-               since distance_fucntion defaults to cosine
-        :param return_info bool whether to return detections info or not,
-        defaults to False
-        :param min_face_size int minimum face size in pixels,defaults to 20
-        :param pretrained_model str which pretrained model from
-        facenet_pytorch for Resnet,defaults to vggface2
+        Filters images that do not contain a specific face.
+
+        Parameters
+        ----------
+        ref_img_path : str or Path
+            Path to the reference image containing the face to match.
+        output_dir : str or Path
+            Path to the directory where matched images will be saved.
+        prob_threshold : float, optional
+            Threshold for final face detection probability. Defaults to None.
+        min_face_size : int, optional
+            Minimum face size in pixels for detection. Defaults to 20.
+        distance_threshold : float, optional
+            Threshold for considering faces equal. Defaults to 0.6.
+        pretrained_model : str, optional
+            Pre-trained model to use from facenet_pytorch.
+            Defaults to 'vggface2'.
+        distance_function : str, optional
+            Distance function for matching 'euclidean' or 'cosine'.
+            Defaults to 'cosine'.
+        return_info : bool, optional
+            If True, returns detection information. Defaults to False.
+
+        Returns
+        -------
+        SysFileManager.GalleryManager or tuple
+            Returns the GalleryManager for the output directory.
+            If `return_info` is True,
+            returns a tuple containing the GalleryManager object
+            and a dictionary with filtering info.
+
+        Raises
+        ------
+        InvalidInputError
+            If the provided model or distance function is invalid.
+        NoFaceDetectedInReferenceImage
+            If no face is detected in the reference image.
+        InvalidPathError
+            If the specified output directory is invalid.
         """
         # Check pretained_arg
         pretrained_available = ['vggface2', 'casia-webface']
@@ -314,15 +410,31 @@ class FaceRecognizer:
                                           min_face_size: int = 20,
                                           return_info: bool = False):
         """
-        Method to filter images where the number of detected
-        faces is greater than one
-        :param prob_threshold float|None final probability threshold for face
-        detection,defaults to None
-        :param min_face_size int|None minimum size of face detection,
-        defaults to 20
-        :param output_dir str directory to save filtered images
-        :param return_info bool whether to return filtered images info,
-        defaults to False
+        Filters images with more than one detected face.
+
+        Parameters
+        ----------
+        output_dir : str or Path
+            Path to the directory where images will be saved.
+        prob_threshold : float, optional
+            Probability threshold for face detection. Defaults to None.
+        min_face_size : int, optional
+            Minimum face size in pixels for detection. Defaults to 20.
+        return_info : bool, optional
+            If True, returns detection information. Defaults to False.
+
+        Returns
+        -------
+        SysFileManager.GalleryManager or tuple
+            Returns the GalleryManager for the output directory.
+            If `return_info` is True,
+            returns a tuple containing the GalleryManager object
+            and a dictionary with filtering info.
+
+        Raises
+        ------
+        InvalidPathError
+            If the specified output directory is invalid.
         """
         # Check dir
         output_dir = utils.dirisvalid(
@@ -409,33 +521,35 @@ class FaceRecognizer:
                                        output_dir: str | Path,
                                        save_only_matched: bool = False):
         """
-        Method to save images with model's detection boxes drawn with red
-        outline to an output directory
-        from an 'info' dict list (dict with same format as the one returned by
-        one of the filtering methods)
-        format:
+        Saves images with detection boxes drawn to an output directory.
 
-        info_dict_lst=[{
-        'path': File path of image
-        'boxes': Numpy array of detection boxes returned by the model or None
-        (if no face was detected)
-        'matched': Boolean of wether the image passed the filter of whichever
-        filtering method generated the dict
-        '...':'...'},
-        {...},...]
+        This method takes an info dictionary list
+        (from previous filtering methods) and saves the images
+        with the model's detection boxes as red outlines.
 
-        -All key-value pairs specified above must exist on every dict of
-        info_dict_lst.
-        -Any other key-value pair other than the ones specified above will be
-        ignored and do not need to be present.
+        Parameters
+        ----------
+        info_dict_lst : list
+            A list of dictionaries with the following keys:
+            - 'path': File path of the image.
+            - 'boxes': Numpy array of detection boxes returned by the model
+                       or None.
+            - 'matched': Boolean indicating if the image passed the filter.
+        output_dir : str or Path
+            Directory to save images with boxes drawn.
+        save_only_matched : bool, optional
+            If True, saves only matched images
+            (i.e., those where 'matched' is True). Defaults to False.
 
-        The images in which the model didn't recognize a face ('boxes':None)
-        will be skipped
+        Returns
+        -------
+        SysFileManager.GalleryManager
+            Manager for the directory containing saved images.
 
-        :param info_dict_lst: list specified above in docstring
-        :param output_dir: str Directory to save images to
-        :param save_only_matched:bool Wether to save only matched images
-        ('matched':True),defaults to False
+        Raises
+        ------
+        TorchNotInstalledError
+            If PyTorch is not installed.
         """
         try:
             import torch

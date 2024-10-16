@@ -1,0 +1,114 @@
+site_name: charloratools
+theme:
+  name: material
+  palette:
+    scheme: slate
+    primary: black
+    accent: indigo
+  font:
+    text: Roboto
+    code: Roboto Mono
+  logo: assets/logo.png
+  favicon: assets/images/favicon.png
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - content.code.copy
+    - content.tooltips
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.indexes
+    - toc.follow
+    - navigation.top
+    - search.suggest
+    - navigation.footer
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/svdC1/charloratools
+      name: charloratools on GitHub
+extra_css:
+- css/custom.css 
+copyright: Copyright &copy; 2024 - 2024 svdC1
+
+
+repo_url: https://github.com/svdC1/charloratools
+nav:
+  - Overview: "index.md"
+  - API Reference:
+      - SysFileManager: "sysfilemanager.md"
+      - FilterAI: "filterai.md"
+      - Scrapers: "scrapers.md"
+      - utils: "utils.md"
+      - cli: "cli.md"
+      - errors: "errors.md"
+  - Blog:
+      - blog/index.md
+    
+markdown_extensions:
+  - admonition
+  - md_in_html
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.details
+  - pymdownx.tasklist
+  - pymdownx.snippets
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - abbr
+  - attr_list
+  - def_list
+  - footnotes
+  - toc:
+      permalink: True
+plugins:
+  - search
+  - autorefs
+  - blog
+  - privacy
+  - tags
+  - mkdocstrings:
+      enable_inventory: true
+      handlers:
+        python:
+          import: 
+          - url: https://pytorch.org/docs/stable/objects.inv
+            domains: [std,py]
+          - url: https://docs.python.org/release/3.11.10/objects.inv
+            domains: [std,py]
+          - url: https://numpy.org/doc/stable/objects.inv
+            domains: [std,py]
+          - url: https://www.selenium.dev/selenium/docs/api/py/objects.inv
+            domains: [std,py]
+          - url: https://pandas.pydata.org/docs/objects.inv
+            domains: [std,py]
+          paths: [src]
+          options:
+            docstring_style: numpy
+            show_source: false
+            heading_level: 1
+            merge_init_into_class: true
+            show_signature_annotations: true
+            show_root_toc_entry: true
+            show_root_full_path: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            signature_crossrefs: true
+            docstring_options:
+              ignore_init_summary: true
+
+
+

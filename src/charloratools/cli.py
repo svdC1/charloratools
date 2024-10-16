@@ -1,3 +1,65 @@
+"""
+> Provides command-line interface `(CLI)` utilities for **managing
+the installation of PyTorch with varying configurations** It also includes
+functions to check the system's available resources such as CUDA
+and ROCm.
+
+Functions
+---------
+run_os_command(command_args)
+    Executes a system command and manages error handling.
+get_cuda_version()
+    Checks if CUDA is available and returns the installed version.
+check_rocm()
+    Determines if ROCm (AMD GPU support) is available on the system.
+get_os()
+    Detects the operating system being used.
+install_torch_cpu()
+    Installs the CPU-only version of PyTorch.
+install_torch_cuda(cuda_version)
+    Installs PyTorch with CUDA support based on the provided version.
+install_torch_rocm()
+    Installs PyTorch with ROCm support for AMD GPUs (Linux only).
+get_torch_version()
+    Retrieves the installed version of PyTorch.
+run_install_script()
+    Checks system details and runs the appropriate installation
+    script for PyTorch.
+main()
+    Main entry point for the CLI utility.
+
+Examples
+--------
+> This module is intended to be used as a command-line utility for setting
+up the PyTorch environment. You can call it with specific commands to
+**install the appropriate version of PyTorch based on your system config.**
+```bash
+python -m charloratools.cli install_torch
+```
+**If `charloratools` was installed through pip**
+```bash
+charloratools install_torch
+```
+This command **checks the current system specifications and installs the
+correct version of PyTorch (CPU-only, CUDA, or ROCm) as appropriate.**
+
+Raises
+------
+TorchNotInstalledError
+    Raised when the required PyTorch library cannot be imported during the
+    installation script.
+InvalidInputError
+    Raised when invalid inputs are provided, for example, unsupported CUDA
+    or ROCm options.
+RuntimeError
+    Raised when there is a failure in the installation commands or if
+    the operating system cannot be determined.
+FileNotFoundError
+    Raised when expected commands, like nvidia-smi or nvcc, are not found in
+    the system.
+"""
+
+
 import subprocess
 import platform
 import logging
@@ -10,7 +72,18 @@ EXECUTABLE = sys.executable
 
 def run_os_command(command_args: list) -> subprocess.CompletedProcess:
     """
-    Helper function to run system commands and manage error handling
+    Runs a system command and manages error handling.
+
+    Parameters
+    ----------
+    command_args : list
+        The command and its arguments to run in the operating system.
+
+    Returns
+    -------
+    subprocess.CompletedProcess
+        The result of the executed command, including stdout, stderr,
+        and return code.
     """
     logging.info(f"Running : {' '.join(command_args)}")
     try:
@@ -28,7 +101,12 @@ def run_os_command(command_args: list) -> subprocess.CompletedProcess:
 
 def get_cuda_version() -> str | None:
     """
-     Checks if CUDA is available, if it is , return the CUDA version installed
+    Checks if CUDA is available and returns the installed version.
+
+    Returns
+    -------
+    str or None
+        The installed CUDA version if available, otherwise None.
     """
     logging.info("Checking if CUDA is available...")
     try:
@@ -58,7 +136,15 @@ def get_cuda_version() -> str | None:
 
 
 def check_rocm() -> bool | None:
-    """Check if ROCm (AMD GPU) is available."""
+    """
+    Checks if ROCm (AMD GPU) is available.
+
+    Returns
+    -------
+    bool or None
+        True if ROCm is detected, False otherwise. If an error occurs,
+        returns None.
+    """
     logging.info("Checking if ROCM is available...")
     rocm = run_os_command(["rocminfo"])
     if rocm.returncode != 0:
@@ -75,6 +161,14 @@ def check_rocm() -> bool | None:
 
 
 def get_os() -> str | None:
+    """
+    Detects the operating system.
+
+    Returns
+    -------
+    str or None
+        The name of the operating system or None if detection fails.
+    """
     if platform.system() == "":
         return None
     else:
@@ -84,7 +178,12 @@ def get_os() -> str | None:
 
 def install_torch_cpu() -> None:
     """
-    Torch CPU-Only installation
+    Installs the CPU-only version of PyTorch.
+
+    Raises
+    ------
+    RuntimeError
+        If an error occurs while installing the CPU-only version of PyTorch.
     """
     # pip install torch torchvision torchaudio --index-url
     # https://download.pytorch.org/whl/cpu
@@ -102,7 +201,18 @@ def install_torch_cpu() -> None:
 
 def install_torch_cuda(cuda_version: str | None) -> None:
     """
-    Torch installation with CUDA Support
+    Installs PyTorch with CUDA support.
+
+    Parameters
+    ----------
+    cuda_version : str or None
+        The version of CUDA to install for PyTorch. If None,
+        attempts a CPU-only installation.
+
+    Raises
+    ------
+    RuntimeError
+        If an error occurs while installing the CUDA version of PyTorch.
     """
     if cuda_version is None:
         logging.warning("CUDA is not installed, installing CPU-Only torch")
@@ -161,7 +271,12 @@ def install_torch_cuda(cuda_version: str | None) -> None:
 
 def install_torch_rocm() -> None:
     """
-    Torch installation with ROCM support - Linux Only
+    Installs PyTorch with ROCm support (Linux Only).
+
+    Raises
+    ------
+    RuntimeError
+        If an error occurs while installing the ROCm version of PyTorch.
     """
     # pip install torch torchvision torchaudio --index-url
     # https://download.pytorch.org/whl/rocm6.1
@@ -179,6 +294,15 @@ def install_torch_rocm() -> None:
 
 
 def get_torch_version() -> str | None:
+    """
+    Retrieves the installed version of PyTorch.
+
+    Returns
+    -------
+    str or None
+        The version of PyTorch installed or
+        None if the installation is not found.
+    """
     try:
         import torch
         t_version = torch.__version__
@@ -197,6 +321,15 @@ def get_torch_version() -> str | None:
 
 
 def run_install_script() -> None:
+    """
+    Checks system details and runs the appropriate
+    installation script for PyTorch.
+
+    Raises
+    ------
+    RuntimeError
+        If the operating system cannot be determined or if a setup fails.
+    """
     # Checking system details
     os = get_os()
     if not os:
@@ -242,6 +375,7 @@ def run_install_script() -> None:
 
 
 def main():
+    """Main entry point for the CLI utility."""
     # Setup logging
     logging.basicConfig(
         level="INFO", style='{', format="{levelname} - {message}")

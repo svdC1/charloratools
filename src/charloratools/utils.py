@@ -1,3 +1,84 @@
+"""
+Functionalities
+---------------
+ - image processing
+ - facial recognition
+ - scraping functionalities
+ - validating image directories
+ - downloading from URLs
+ - initializing Selenium drivers
+ - various image transformation utilities.
+
+Functions
+---------
+torch_import()
+    Attempts to import the PyTorch library and its torchvision transforms.
+    Raises errors if unsuccessful.
+dirisvalid(path, check_images=True, return_info=False, hashtype=None,
+           create_if_not_found=False, show_tqdm=False)
+    Validates a directory path and checks for image files.
+    Optionally creates the directory if it does not exist.
+GetUniqueDtStr()
+    Generates a unique timestamp string for file naming.
+save_with_detection_box(img_path, outdir, boxes)
+    Saves an image with drawn detection boxes to a specified output directory.
+distance_function(embedding1, embedding2, method, classify=False,
+                  threshold=None)
+    Calculates the distance between two embeddings using either
+    Euclidean distance or cosine similarity.
+InfoDict2Pandas(info)
+    Converts and validates an info dictionary returned by filtering
+    methods into a formatted Pandas DataFrame.
+is_matched(df_el)
+    Returns the DataFrame element if it matches (i.e., 'matched' is True).
+not_is_matched(df_el)
+    Returns the DataFrame element if it does not match
+    (i.e., 'matched' is False).
+split_matched(info_dict)
+    Separates an info dictionary into matched and not matched items,
+    returning Pandas DataFrames.
+initialize_driver(headless=True, incognito=True, add_arguments=None)
+    Initializes a Selenium Chrome Web Driver with specified options.
+page_scroll(driver, n, webpage_wait_time)
+    Scrolls a webpage a specified number of times using Selenium WebDriver.
+download_from_src(srcs, prefix, save_path, logger)
+    Downloads images from provided URL sources and checks for corruption.
+img_path_to_tensor(img_path, nsize=None)
+    Converts an image at the specified path to a tensor,optionally resizing it.
+dir_path_to_img_batch(path)
+    Converts all images in a directory to a batch of tensors.
+
+Raises
+------
+TorchNotInstalledError
+    Raised when the required PyTorch library is not found.
+InvalidInputError
+    Raised for invalid inputs or parameters.
+InvalidTypeError
+    Raised when the type of the provided path is not suitable.
+NoImagesInDirectoryError
+    Raised when no images are found in the specified directory.
+ErrorScrollingPage
+    Raised when an error occurs while scrolling a webpage with Selenium.
+FailedToAddOptionsArgumentError
+    Raised when additional arguments for the webdriver cannot be added.
+DriverInitializationError
+    Raised when the Selenium driver fails to initialize.
+ImageDownloadError
+    Raised when an error occurs during image downloading.
+InfoDictFormatError
+    Raised when the format of the info dictionary is invalid.
+
+Examples
+--------
+```python
+from charloratools.utils import dirisvalid, download_from_src
+valid_dir, image_info = dirisvalid('path/to/images', return_info=True)
+download_from_src(['http://example.com/image1.jpg'],
+                   'prefix', 'path/to/download', logger)
+```
+"""
+
 import logging
 import time
 import requests
@@ -21,6 +102,19 @@ from . import SysFileManager
 
 
 def torch_import():
+    """
+    Attempts to import the PyTorch library and its torchvision transforms.
+
+    Returns
+    -------
+    tuple
+        A tuple containing the PyTorch and torchvision transforms modules.
+
+    Raises
+    ------
+    TorchNotInstalledError
+        If the PyTorch library is not installed.
+    """
     try:
         import torch
         from torchvision.transforms import v2
@@ -36,19 +130,43 @@ def dirisvalid(path: str | Path,
                create_if_not_found: bool = False,
                show_tqdm: bool = False):
     """
-      Function to check dir properties or create new directory if it
-      doens't exist
-      :param path str path to directory
-      :param check_images bool whether to check if at least 1 image exists or
-      not,defaults to True
-      :param return_info bool whether to return number of images in dir and
-      their paths or not,defaults to False
-      :param hashtype str hash type to use for hashing imgs,must be provided
-      if return_info=True,defaults to None
-      :param create_if_not_found bool whether to create directory if it does
-      not exist,defaults to False
-      :param show_tqdm bool wether or not to show image loading and hashing
-      progress with tqdm,defaults to False
+    Checks the validity of a directory and its image contents or
+    creates a new directory.
+
+    Parameters
+    ----------
+    path : str or Path
+        Path to the directory to validate or create.
+    check_images : bool, optional
+        Whether to check if at least one image exists in the directory.
+        Defaults to True.
+    return_info : bool, optional
+        If True, returns number of images in the directory and their paths.
+        Defaults to False.
+    hashtype : str or None, optional
+        Hash type to use for hashing images.
+        Must be provided if return_info=True. Defaults to None.
+    create_if_not_found : bool, optional
+        If True, creates the directory if it does not exist. Defaults to False.
+    show_tqdm : bool, optional
+        If True, shows progress with tqdm during image loading and hashing.
+        Defaults to False.
+
+    Returns
+    -------
+    Path or tuple
+        If return_info is False, returns the resolved directory path.
+        If return_info is True, returns a tuple containing the directory
+        path and a dictionary of images.
+
+    Raises
+    ------
+    InvalidTypeError
+        If the provided path is not a string or path-like object.
+    InvalidPathError
+        If the directory does not exist and create_if_not_found is False.
+    NoImagesInDirectoryError
+        If no images are found in the directory when check_images is True.
     """
     torch, v2 = torch_import()
     logger = logging.getLogger(__name__)
@@ -122,12 +240,38 @@ def dirisvalid(path: str | Path,
 
 
 def GetUniqueDtStr():
+    """
+    Generates a unique timestamp string for file naming.
+
+    Returns
+    -------
+    str
+        A unique timestamp string formatted as `MMDDYYHHMMSSffffff`.
+    """
     return datetime.now().strftime("%m%d%y%H%M%S%f")
 
 # ---------Face Recognizer Utils------------
 
 
 def save_with_detection_box(img_path: str | Path, outdir: str | Path, boxes):
+    """
+    Saves an image with detection boxes drawn on it to the specified
+    output directory.
+
+    Parameters
+    ----------
+    img_path : str or Path
+        Path to the image file.
+    outdir : str or Path
+        Path to the directory where the output image will be saved.
+    boxes : list
+        List of bounding boxes to be drawn on the image.
+
+    Raises
+    ------
+    InvalidTypeError
+        If img_path or outdir is not of string or Path type.
+    """
     torch, v2 = torch_import()
     outdir = dirisvalid(outdir, create_if_not_found=True)
     img_manager = SysFileManager.ImgManager(path=img_path)
@@ -147,19 +291,35 @@ def distance_function(embedding1,
                       classify=False,
                       threshold=None):
     """
-    Function for calculating the distance between two embeddings using either
-    Euclidean Distance or
-    PyTorch builtin Functional Cosine Similarity Function
-    Euclidean Distance: Ranges dependant of tensor values
-    Cosine Similiarity: 1=identical vectors;0=orthogonal vectors
-    (no similarity),-1=completely opposite vectors.
-    :param embedding1: torch tensor 1
-    :param embedding2: torch tensor 2
-    :param method: str 'euclidean' or 'cosine' distance function to use
-    :param classify: wether to classify embeddings as matching or not based on
-    provided threshold,defaults to False
-    :param threshold: threshold for minimum cosine similarity or maximum
-    euclidean distance classsification,defaults to None
+    Calculates the distance between two embeddings using a specified method.
+
+    Parameters
+    ----------
+    embedding1 : torch.Tensor
+        The first embedding tensor.
+    embedding2 : torch.Tensor
+        The second embedding tensor.
+    method : str
+        The distance method to use ('euclidean' or 'cosine').
+    classify : bool, optional
+        If True, classify embeddings as matching based on the provided
+        threshold. Defaults to False.
+    threshold : float, optional
+        Threshold for classifying embeddings when classify is True.
+        Defaults to None.
+
+    Returns
+    -------
+    float or bool
+        If classify is False, returns the calculated distance.
+        If classify is True, returns whether
+        the embeddings match based on the threshold.
+
+    Raises
+    ------
+    InvalidInputError
+        If the provided method is not supported or if threshold is None
+        when classify is True.
     """
     torch, v2 = torch_import()
     supported_methods = ['euclidean', 'cosine']
@@ -193,11 +353,23 @@ def distance_function(embedding1,
 
 def InfoDict2Pandas(info: dict | list):
     """
-    Function to validate and convert info dict returned by FaceRecognizer
-    filtering methods to formatted Pandas DataFrame
-    :param info: dict returned by FaceRecognizer filtering methods or list of
-    dicts present in 'info_dict'
-     """
+    Validates and converts an info dictionary to a Pandas DataFrame.
+
+    Parameters
+    ----------
+    info : dict or list
+        Info dictionary returned by filtering methods of FaceRecognizer.
+
+    Returns
+    -------
+    dict
+        A dictionary containing DataFrames of matched and not matched items.
+
+    Raises
+    ------
+    InfoDictFormatError
+        If the format of the provided info dictionary is invalid.
+    """
     torch, v2 = torch_import()
     if not isinstance(info, list) and not isinstance(info, dict):
         raise errors.InfoDictFormatError('Must be a dict or list of dicts')
@@ -300,6 +472,19 @@ def InfoDict2Pandas(info: dict | list):
 
 
 def is_matched(df_el):
+    """
+    Checks if a DataFrame element is matched.
+
+    Parameters
+    ----------
+    df_el : pandas.Series
+        A row of the DataFrame.
+
+    Returns
+    -------
+    pandas.Series or None
+        Returns the row if 'matched' is True; otherwise, returns None.
+    """
     if df_el['matched'] is True:
         return df_el
     else:
@@ -307,6 +492,19 @@ def is_matched(df_el):
 
 
 def not_is_matched(df_el):
+    """
+    Checks if a DataFrame element is not matched.
+
+    Parameters
+    ----------
+    df_el : pandas.Series
+        A row of the DataFrame.
+
+    Returns
+    -------
+    pandas.Series or None
+        Returns the row if 'matched' is False; otherwise, returns None.
+    """
     if df_el['matched'] is False:
         return df_el
     else:
@@ -315,11 +513,17 @@ def not_is_matched(df_el):
 
 def split_matched(info_dict: dict | list):
     """
-    Separates an info dict returned by FaceRecognizer filtering methods to
-    Pandas DataFrames of matched and not matched
-    items
-    :param info_dict: dict or lst of dicts returned by FaceRecognizer
-    filtering methods
+    Separates an info dictionary into matched and not matched items.
+
+    Parameters
+    ----------
+    info_dict : dict or list
+        Info dictionary returned by filtering methods.
+
+    Returns
+    -------
+    dict
+        A dictionary containing DataFrames of matched and not matched items.
     """
     info_out = InfoDict2Pandas(info_dict)
     info_df = info_out['info_df']
@@ -348,10 +552,28 @@ def initialize_driver(headless: bool = True,
                       incognito: bool = True,
                       add_arguments: list | None = None):
     """
-    Funtion to initialize a Selenium Chrome Web Driver
-    :param headless: Wether to initialize the webdriver in headless mode or not
-    :param incognito: Wether to initialize in incognito mode or not
-    :param add_arguments: Additional arguments to pass to the webdriver
+    Initializes a Selenium Chrome Web Driver with specified options.
+
+    Parameters
+    ----------
+    headless : bool, optional
+        If True, runs the driver in headless mode. Defaults to True.
+    incognito : bool, optional
+        If True, runs the driver in incognito mode. Defaults to True.
+    add_arguments : list or None, optional
+        Additional arguments to pass to the web driver. Defaults to None.
+
+    Returns
+    -------
+    webdriver.Chrome
+        Initialized Chrome Web Driver instance.
+
+    Raises
+    ------
+    FailedToAddOptionsArgumentError
+        If adding additional arguments to the WebDriver fails.
+    DriverInitializationError
+        If the driver fails to initialize.
     """
     options = webdriver.ChromeOptions()
     if headless:
@@ -375,10 +597,21 @@ def initialize_driver(headless: bool = True,
 
 def page_scroll(driver, n, webpage_wait_time):
     """
-      Function to scroll a page 'n' times using Selenium WebDriver
-      :param driver: Selenium WebDriver
-      :param n: Number of times to scroll the page
-      :param webpage_wait_time: Time to wait for the page to load
+    Scrolls a webpage 'n' times using Selenium WebDriver.
+
+    Parameters
+    ----------
+    driver : webdriver.Chrome
+        The Selenium WebDriver instance.
+    n : int
+        The number of times to scroll the page.
+    webpage_wait_time : float
+        Time in seconds to wait for the page to load after scrolling.
+
+    Raises
+    ------
+    ErrorScrollingPage
+        If an error occurs while scrolling.
     """
     with logging_redirect_tqdm():
         for i in trange(n, desc=f'Scrolling Page {n} times'):
@@ -392,13 +625,23 @@ def page_scroll(driver, n, webpage_wait_time):
 
 def download_from_src(srcs, prefix, save_path, logger):
     """
-    Function to download images from url sources and check if they're
-    corrupted using requests and Pillow
-    :param srcs: Url sources to download
-    :param prefix: Prefix string to prepend to each img downloaded
-    :param save_path: Path to save the downloaded images
-    :param logger: logging.Logger instance
-    :param insta_pics: Wether to apply routine for instagram pics
+    Downloads images from the provided URL sources and checks for corruption.
+
+    Parameters
+    ----------
+    srcs : list
+        List of URL strings to download images from.
+    prefix : str
+        Prefix string to prepend to each downloaded image filename.
+    save_path : str or Path
+        Path to the directory where downloaded images will be saved.
+    logger : logging.Logger
+        Logger instance for logging download activity.
+
+    Raises
+    ------
+    ImageDownloadError
+        If an error occurs during the image downloading process.
     """
 
     with logging_redirect_tqdm():
@@ -428,6 +671,27 @@ def download_from_src(srcs, prefix, save_path, logger):
 
 
 def img_path_to_tensor(img_path, nsize=None):
+    """
+    Converts an image at the specified path to a tensor.
+
+    Parameters
+    ----------
+    img_path : str or Path
+        Path to the image file.
+    nsize : tuple of int or None, optional
+        Size to which to resize the image, if specified. Defaults to None.
+
+    Returns
+    -------
+    torch.Tensor
+        A tensor representation of the image.
+
+    Raises
+    ------
+    InvalidInputError
+        If img_path is not a string or Path object or if the
+        file type is not supported.
+    """
     torch, v2 = torch_import()
     if isinstance(img_path, str):
         ipath = Path(img_path).resolve()
@@ -456,6 +720,24 @@ def img_path_to_tensor(img_path, nsize=None):
 
 
 def dir_path_to_img_batch(path):
+    """
+     Converts all images in a directory to a batch of tensors.
+
+    Parameters
+    ----------
+    path : str or Path
+        Path to the directory containing image files.
+
+    Returns
+    -------
+    torch.Tensor
+        A tensor representing a batch of images.
+
+    Raises
+    ------
+    InvalidInputError
+        If path is not a valid directory or contains unsupported file types.
+    """
     torch, v2 = torch_import()
     if isinstance(path, str):
         dir_path = Path(path).resolve()

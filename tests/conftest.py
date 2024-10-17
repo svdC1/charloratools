@@ -5,6 +5,8 @@ import urllib.request
 from pathlib import Path
 import sys
 import logging
+import pytest
+from unittest.mock import patch, MagicMock
 
 sys.path.append('./src')
 
@@ -164,3 +166,13 @@ def download_test_faces():
 def cleanup(tempdirs: list):
     for tempdir in tempdirs:
         tempdir.cleanup()
+
+# Add Selenium Webdriver Mocking
+
+
+@pytest.fixture
+def mock_webdriver():
+    with patch('selenium.webdriver.Chrome') as mock_driver:
+        mock_instance = MagicMock()
+        mock_driver.return_value = mock_instance
+        yield mock_instance

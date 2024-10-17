@@ -278,8 +278,7 @@ class ImgManager:
 
     def copy_to(self,
                 path: str | Path,
-                name: str | None = None,
-                copy_delete: bool = False):
+                name: str | None = None):
         """
         Copies the image to a new directory.
 
@@ -292,9 +291,6 @@ class ImgManager:
             The destination path where the image will be copied.
         name : str or None, optional
             The name for the copied image. Defaults to None.
-        copy_delete : bool, optional
-            If True, deletes the original image before copying.
-            Defaults to False.
 
         Raises
         ------
@@ -323,22 +319,11 @@ class ImgManager:
         if name:
             if not isinstance(name, str):
                 raise errors.InvalidInputError("Name must be str")
-
-            if copy_delete:
-                try:
-                    (path/name).unlink()
-                except Exception as e:
-                    raise errors.ImgOperationError(
-                        f"Couldn't delete original image {path/name}:{str(e)}")
-                self.logger.debug(f"Deleted Image {path/name}")
-
-                copy_path = path/name
-
             else:
                 copy_path = path/name
 
         elif self.basename in [i.stem+i.suffix for i in path.iterdir()]:
-            s = f"{self.fname}_{utils.GetUniqueDtStr()}.{self.ext}"
+            s = f"{self.fname}_{utils.GetUniqueDtStr()}{self.ext}"
             copy_path = path / s
         else:
             copy_path = path/self.basename
@@ -346,7 +331,7 @@ class ImgManager:
             self.logger.warning("Image will be overwritten")
         try:
             shutil.copyfile(self.path, copy_path)
-            self.logger.debug(f"Copied Image {self.path} to {copy_path}")
+            self.logger.info(f"Copied Image {self.path} to {copy_path}")
         except Exception as e:
             raise errors.ImgOperationError(
                 f"Failed to copy image to {copy_path}: {str(e)}")
@@ -663,6 +648,10 @@ class GalleryManager:
             If the provided key does not match any image in the gallery.
         """
         if isinstance(key, str):
+            path_value = Path(key).resolve()
+            if not path_value.exists():
+                e = f"Couldn't resolve path from string: {key}"
+                raise errors.InvalidPathError(e)
             imgmanager = ImgManager(
                 path=Path(key).resolve(), hashtype=self.hashtype)
             if imgmanager in self:
@@ -722,17 +711,22 @@ class GalleryManager:
             If the operation is not supported for the provided value type.
         """
         if isinstance(value, str):
+            path_value = Path(value).resolve()
+            if not path_value.exists():
+                e = f"Couldn't resolve path from string: {value}"
+                raise errors.InvalidPathError(e)
             oldimgmanager = self[key]
             nimg = ImgManager(Path(value).resolve(), hashtype=self.hashtype)
-            nimg.copy_to(self.path, name=oldimgmanager.basename,
-                         copy_delete=True)
+            nimg.copy_to(self.path, name=oldimgmanager.basename)
 
         elif isinstance(value, ImgManager):
-            value.copy_to(self.path)
+            oldimgmanager = self[key]
+            value.copy_to(self.path, name=oldimgmanager.basename)
 
         elif isinstance(value, Path):
+            oldimgmanager = self[key]
             nimg = ImgManager(path=value.resolve(), hashtype=self.hashtype)
-            nimg.copy_to(self.path)
+            nimg.copy_to(self.path, name=oldimgmanager.basename)
         else:
             raise errors.OperationNotSupportedError("Operation not supported")
 
@@ -795,6 +789,10 @@ class GalleryManager:
                     else:
                         ohashes.append(i.hash)
                 elif isinstance(i, str):
+                    ipath = Path(item).resolve()
+                    if not ipath.exists():
+                        e = f"Couldn't resolve path from string: {i}"
+                        raise errors.InvalidPathError(e)
                     ohashes.append(ImgManager(
                         path=i, hashtype=self.hashtype).hash)
             shashes = [i.hash for i in self]
@@ -824,6 +822,10 @@ class GalleryManager:
                     return np.any([shash == item.hash for shash in shashes])
 
         elif isinstance(item, str):
+            path = Path(item).resolve()
+            if not path.exists():
+                e = f"Couldn't resolve path from string: {item}"
+                raise errors.InvalidPathError(e)
             nhash = ImgManager(item, hashtype=self.hashtype).hash
             if self.hashtype == 'sha256':
                 return nhash in [i.hash for i in self]
@@ -970,6 +972,10 @@ class GalleryManager:
                                   hashtype=self.hashtype)
         # Subtracting instance from str
         elif isinstance(other, str):
+            path = Path(other).resolve()
+            if not path.exists():
+                e = f"Couldn't resolve path from string: {other}"
+                raise errors.InvalidPathError(e)
             nimgmanager = ImgManager(other, hashtype=self.hashtype)
             fn = Path(f"{self.basename}_add_{nimgmanager.basename}")
             new_dir_name = Path(f"{self.ext_dir}")/fn
@@ -1049,6 +1055,10 @@ class GalleryManager:
                                   hashtype=self.hashtype)
 
         elif isinstance(other, str):
+            path = Path(other).resolve()
+            if not path.exists():
+                e = f"Couldn't resolve path from string: {other}"
+                raise errors.InvalidPathError(e)
             nimgmanager = ImgManager(other, hashtype=self.hashtype)
             img_to_add = [i for i in self if i != nimgmanager]
             if len(img_to_add) == 0:
@@ -1105,6 +1115,10 @@ class GalleryManager:
                 imgmanager.copy_to(self.path)
             return self
         elif isinstance(other, str):
+            path = Path(other).resolve()
+            if not path.exists():
+                e = f"Couldn't resolve path from string: {other}"
+                raise errors.InvalidPathError(e)
             nimgmanager = ImgManager(other, hashtype=self.hashtype)
             nimgmanager.copy_to(self.path)
             return self
@@ -1145,6 +1159,10 @@ class GalleryManager:
                 if imgmanager in other:
                     imgmanager.delete()
         elif isinstance(other, str):
+            path = Path(other).resolve()
+            if not path.exists():
+                e = f"Couldn't resolve path from string: {other}"
+                raise errors.InvalidPathError(e)
             nimgmanager = ImgManager(other, hashtype=self.hashtype)
             for imgmanager in self:
                 if imgmanager == nimgmanager:

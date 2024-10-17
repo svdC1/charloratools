@@ -20,10 +20,10 @@ pip install charloratools
 ```
 ### Torch CPU-Only
 ```bash 
-pip install charloratools[full]
+pip install charloratools[cpu]
 ```
 ## Documentation
-### For full API Reference and more information check the **link provided at the repo's `About` section**
+### Check the Full [API Reference](https://svdc1.github.io/charloratools)
 
 ## Torch Install Script
 

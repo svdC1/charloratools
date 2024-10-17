@@ -1,7 +1,4 @@
 # ... previous config options...
-coverage:
-    patch:
-      default: 20
 component_management:
   default_rules:  # default rules that will be inherited by all components
     statuses:

@@ -1,4 +1,15 @@
-# ... previous config options...
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 0%
+        base: auto 
+        if_ci_failed: success
+        only_pulls: false
+        paths: 
+          - src/charloratools
+        removed_code_behavior: off
 component_management:
   default_rules:  # default rules that will be inherited by all components
     statuses:
